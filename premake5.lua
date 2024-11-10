@@ -1,21 +1,37 @@
-workspace "DirectX12"
+workspace "HexEngine"
     cppdialect "C++20"
-    configurations {"Debug64"}
+    configurations {"Debug64", "Release64", "Debug32", "Release32"}
     filter "configurations:Debug64"
         defines {"_DEBUG", "_WINDOWS"}
-        symbols "On"
+        symbols "Full"
         architecture "x86_64"
-    project "DirectX12"
+        
+    filter "configurations:Debug32"
+        defines {"_DEBUG", "_WINDOWS"}
+        symbols "Full"
+        architecture "x86"
+        
+    filter "configurations:Release64"
+        defines {"_WINDOWS"}
+        symbols "Off"
+        architecture "x86_64"
+        
+    filter "configurations:Release32"
+        defines {"_WINDOWS"}
+        symbols "Off"
+        architecture "x86"
+        
+    project "HexEngine"
         kind "WindowedApp"
         language "C++"
         targetdir "Build"
         objdir "Binaries"
-        includedirs {"Src/**"}
-        files {"Src/**"}
+        includedirs {"Source/**"}
+        files {"Source/**"}
         links {"d3d12", "d3dcompiler", "DXGI"}
-        filter { "files:**.hlsl"}
-            shadermodel("5.0")
-            buildaction("none")
+        filter {"files:**.hlsl"}
+            shadermodel("6.8")
+            buildaction("FxCompile")
         filter {"files:vs**.hlsl"}
             shadertype "Vertex"
         filter {"files:ps**.hlsl"}
@@ -27,6 +43,9 @@ workspace "DirectX12"
         filter {"files:ds**.hlsl"}
             shadertype "Domain"
         filter {"files:cs**.hlsl"}
+           shadertype "Compute"
+        filter {"files:ms**.hlsl"}
+            shadertype "Lib"
 
 
         --local projectPath = path.getabsolute(project().location or "./")
