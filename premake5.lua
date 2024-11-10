@@ -15,11 +15,13 @@ workspace "HexEngine"
         defines {"_WINDOWS"}
         symbols "Off"
         architecture "x86_64"
+        optimize "Full"
         
     filter "configurations:Release32"
         defines {"_WINDOWS"}
         symbols "Off"
         architecture "x86"
+        optimize "Full"
         
     project "HexEngine"
         kind "WindowedApp"
