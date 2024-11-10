@@ -30,7 +30,7 @@ workspace "HexEngine"
         files {"Source/**"}
         links {"d3d12", "d3dcompiler", "DXGI"}
         filter {"files:**.hlsl"}
-            shadermodel("6.8")
+            shadermodel("6.5")
             buildaction("FxCompile")
         filter {"files:vs**.hlsl"}
             shadertype "Vertex"
@@ -45,8 +45,9 @@ workspace "HexEngine"
         filter {"files:cs**.hlsl"}
            shadertype "Compute"
         filter {"files:ms**.hlsl"}
-            shadertype "Lib"
-
+            shadertype "Mesh"
+        filter {"files:as**.hlsl"}
+            shadertype "Amplification"
 
         --local projectPath = path.getabsolute(project().location or "./")
         --prebuildcommands {"python prebuild.py \"" .. projectPath .. "/\""}
