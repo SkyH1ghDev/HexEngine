@@ -32,7 +32,7 @@ workspace "HexEngine"
         files {"Source/**"}
         links {"d3d12", "d3dcompiler", "DXGI"}
         filter {"files:**.hlsl"}
-            shadermodel("6.5")
+            shadermodel("6.6")
             buildaction("FxCompile")
         filter {"files:vs**.hlsl"}
             shadertype "Vertex"
