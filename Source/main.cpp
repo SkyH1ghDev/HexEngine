@@ -1,14 +1,10 @@
 ﻿#define _CRTDBG_MAP_ALLOC
+#define WIN32_LEAN_AND_MEAN
 
 #include <crtdbg.h>
-
 #include <Windows.h>
-#include <d3d12.h>
-#include "DirectXMath.h"
 
-#include <iostream>
-
-namespace DX = DirectX;
+#include "Application.hpp"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                       _In_opt_ HINSTANCE hPrevInstance,
@@ -18,7 +14,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	// Braces to let the application go out of scope before checking memory leaks
 	{
-		std::cout << "Test";
+		Application engine(hInstance);
+
+		engine.Run();
 	}
 
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
