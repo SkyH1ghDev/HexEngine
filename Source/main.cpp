@@ -3,7 +3,6 @@
 
 #include <crtdbg.h>
 #include <Windows.h>
-
 #include "Application.hpp"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,

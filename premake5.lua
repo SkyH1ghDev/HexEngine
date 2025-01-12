@@ -28,8 +28,8 @@ workspace "HexEngine"
         language "C++"
         targetdir "Build"
         objdir "Binaries"
-        includedirs {"Source/**"}
-        files {"Source/**"}
+        includedirs {"Source/**", "Libraries/**"}
+        files {"Source/**", "Libraries/**"}
         links {"d3d12", "d3dcompiler", "DXGI"}
         filter {"files:**.hlsl"}
             shadermodel("6.6")

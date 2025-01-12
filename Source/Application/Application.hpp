@@ -1,7 +1,10 @@
 ﻿#pragma once
 
-#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+#include "Clock.hpp"
+#include "ExitHandler.hpp"
+#include "InputManager.hpp"
 
 class Application
 {
@@ -9,22 +12,16 @@ public:
     Application(const HINSTANCE& instance);
     
 public:
-    /**
-     * Run the engine
-     */
     void Run();
 
 private:
-    /**
-     * Setup the engine 
-     */
     void Setup();
-
-    /**
-     * Being render loop
-     */
-    void Render();
+    void RenderFrame();
 
 private:
     HWND _window;
+    InputManager _inputManager;
+    Clock _clock;
+
+    std::shared_ptr<ExitHandler> _exitHandler = std::make_shared<ExitHandler>();
 };
