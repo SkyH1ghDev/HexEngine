@@ -1,9 +1,15 @@
-#include <iostream>
+#define _CRTDBG_MAP_ALLOC
 
-#include <lib.h>
+#include <crtdbg.h>
+#include <HexEngine/Engine/EngineCore.hpp>
 
-int main()
+int main(int argc, char* argv[])
 {
-    std::cout << "Hello world!\n" << "The meaning of life is " << DummyLibNamespace::libFunc() << "\n";
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+    {
+        EngineCore::Run();
+    }
+
     return 0;
 }
