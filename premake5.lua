@@ -24,6 +24,7 @@ workspace "HexEngine"
 
     targetBuildPath = path.getdirectory(_SCRIPT) .. "/Build/target"
     objBuildPath = path.getdirectory(_SCRIPT) .. "/Build/obj"
+    projectsPath = path.getdirectory(_SCRIPT) .. "/Generated/projects"
 
 include "External"
 include "Engine"
