@@ -1,8 +1,8 @@
-project "DummyApp"
+project "Game"
     kind "ConsoleApp"
     targetdir(targetBuildPath .. "/%{prj.name}")
     objdir(objBuildPath .. "/%{prj.name}")
     files {"src/**.h", "src/**.cpp"}
-    includedirs{"../DummyLib/include"}
+    includedirs{"../Engine/include"}
 
-    links{"DummyLib"}
+    links{"Engine"}
