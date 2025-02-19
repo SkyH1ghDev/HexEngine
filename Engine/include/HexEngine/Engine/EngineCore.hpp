@@ -1,7 +1,6 @@
 #pragma once
-#include "EngineLoop.hpp"
-#include "EngineSetup.hpp"
-#include "HexEngine/Renderer/Renderer.hpp"
+
+#include <HexEngine/Renderer/Renderer.hpp>
 
 class EngineCore
 {
@@ -16,8 +15,5 @@ public:
     static void Run();
 
 private:
-    EngineLoop m_loop;
-    EngineSetup m_setup;
-
     Renderer m_renderer;
 };

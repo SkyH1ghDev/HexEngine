@@ -1,11 +1,16 @@
 project "Game"
 
     location(projectsPath)
-
+    
     kind "ConsoleApp"
     targetdir(targetBuildPath .. "/%{prj.name}")
     objdir(objBuildPath .. "/%{prj.name}")
     files {"src/**.h", "src/**.cpp"}
     includedirs{"../Engine/include", targetBuildPath .. "/External/include"}
 
-    links{"Engine"}
+    libdirs{targetBuildPath .. "/External/lib/"}
+
+    dependson{"SDL3", "Engine"}
+
+    links{"SDL3-static", "imagehlp", "setupapi", "user32", "version", "uuid", "winmm", "imm32", "ole32", "oleaut32", "shell32", 
+          "Engine"}

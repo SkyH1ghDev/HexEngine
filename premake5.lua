@@ -2,6 +2,7 @@ require "clean"
 require "vscode"
 
 workspace "HexEngine"
+
     location "Generated"
     cppdialect "C++23"
     configurations

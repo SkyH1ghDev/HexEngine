@@ -11,6 +11,6 @@ project "Test"
     libdirs{targetBuildPath .. "/External/lib"}
 
     -- Although this consoleApp does not link to the "GoogleTest" project per say, it is still dependant on its build to finish
-    dependson {"GoogleTest"}
+    dependson {"GoogleTest", "Engine", "SDL3"}
 
-    links{"Engine", "gtest"}
+    links{"Engine", "gtest", "SDL3"}

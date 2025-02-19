@@ -6,6 +6,5 @@ project "Engine"
     targetdir(targetBuildPath .. "/%{prj.name}")
     objdir(objBuildPath .. "/%{prj.name}")
     files {"include/**.hpp", "src/**.cpp"}
-    includedirs{"include/", targetBuildPath .. "/External/include"}
-
-    dependson{"SDL3"}
+    includedirs {"include/", targetBuildPath .. "/External/include/"}
+    libdirs {targetBuildPath .. "/External/lib/"}
