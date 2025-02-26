@@ -12,5 +12,5 @@ project "Game"
 
     dependson{"SDL3", "Engine"}
 
-    links{"SDL3-static", "imagehlp", "setupapi", "user32", "version", "uuid", "winmm", "imm32", "ole32", "oleaut32", "shell32", 
+    links{"SDL3-static", "imagehlp", "setupapi", "user32", "version", "uuid", "winmm", "imm32", 
           "Engine"}

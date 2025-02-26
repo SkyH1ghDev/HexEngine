@@ -1,8 +1,8 @@
-#include <HexEngine/Engine/EngineLoop.hpp>
-#include <HexEngine/Engine/EngineSetup.hpp>
-#include <HexEngine/Engine/EngineCore.hpp>
+#include "EngineLoop.hpp"
+#include "EngineSetup.hpp"
+#include "EngineCore.hpp"
 
 void EngineCore::Run()
 {
-    EngineSetup::InitializeWindow();
+    std::shared_ptr<SDL_Window> window = EngineSetup::InitializeWindow();
 }
