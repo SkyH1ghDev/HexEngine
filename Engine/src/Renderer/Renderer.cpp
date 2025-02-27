@@ -1,15 +1,11 @@
 #include "Renderer.hpp"
+#include "RendererSetup.hpp"
 
-void Renderer::Setup()
+Renderer::Renderer()
 {
-    
-}
+    // Only When _DEBUG Flag is set 
+    this->m_debugInterface = RendererSetup::CreateDebugLayer();
 
-void Renderer::EnableDebugLayer()
-{
-    // Enables Debug Layer
-    #if defined(_DEBUG)
-    MW::ComPtr<ID3D12Debug> debugInterface;
-    #endif
+    // Standard DirectX12 Initialization
+    this->m_device = RendererSetup::CreateDevice();
 }
-

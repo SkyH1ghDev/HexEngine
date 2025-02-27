@@ -13,4 +13,10 @@ project "Game"
     dependson{"SDL3", "Engine"}
 
     links{"SDL3-static", "imagehlp", "setupapi", "user32", "version", "uuid", "winmm", "imm32", 
-          "Engine"}
+          "Engine",
+          "DirectXTK12", 
+          "DirectX-Headers",
+          "DirectX-Guids",
+          "d3d12",
+          "DXGI"
+    }

@@ -7,3 +7,6 @@
 [submodule "External/DirectXToolKit"]
 	path = External/DirectXToolKit
 	url = https://github.com/microsoft/DirectXTK12.git
+[submodule "External/DirectXHeaders"]
+	path = External/DirectXHeaders
+	url = https://github.com/microsoft/DirectX-Headers.git

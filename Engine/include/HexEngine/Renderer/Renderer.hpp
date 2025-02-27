@@ -1,27 +1,27 @@
 #pragma once
 #include <wrl/client.h>
-#include <d3d12.h>
-#include <dxgi.h>
+#include <directx/d3dx12.h>
+#include <dxgi1_6.h>
 #include <array>
+#include <DirectXMath.h>
 
 namespace MW = Microsoft::WRL;
-// namespace DX = DirectX;
+namespace DX = DirectX;
 
 class Renderer {
 public:
-    Renderer() = default;
+    Renderer();
     ~Renderer() = default;
     Renderer(const Renderer& other) = default;
     Renderer& operator=(const Renderer& other) = default;
     Renderer(Renderer&& other) noexcept = default;
     Renderer& operator=(Renderer&& other) noexcept = default;
 
-    void Setup();
+private:
+    #ifdef _DEBUG
+    MW::ComPtr<ID3D12Debug> m_debugInterface;
+    #endif
 
-private:
-    void EnableDebugLayer();
-    
-private:
     MW::ComPtr<ID3D12Device> m_device;
     MW::ComPtr<ID3D12CommandQueue> m_commandQueue;
     MW::ComPtr<ID3D12CommandAllocator> m_commandAllocator;

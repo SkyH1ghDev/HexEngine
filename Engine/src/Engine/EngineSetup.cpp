@@ -1,4 +1,4 @@
-#include <HexEngine/Engine/EngineSetup.hpp>
+#include "EngineSetup.hpp"
 #include <HexEngine/Dev/SDLMemory.hpp>
 
 std::shared_ptr<SDL_Window> EngineSetup::InitializeWindow()
