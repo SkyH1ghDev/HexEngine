@@ -1,7 +1,5 @@
 #pragma once
 
-#include <HexEngine/Renderer/Renderer.hpp>
-
 class EngineCore
 {
 public:
@@ -13,7 +11,4 @@ public:
     EngineCore& operator=(EngineCore&& other) noexcept = delete;
 
     static void Run();
-
-private:
-    Renderer m_renderer;
 };
