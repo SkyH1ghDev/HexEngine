@@ -36,5 +36,5 @@ private:
     MW::ComPtr<ID3D12GraphicsCommandList> m_commandList;
     MW::ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
     UINT m_rtvDescriptorSize;
-    UINT m_backBufferIndex;
+    UINT m_backBufferIndex = 0;
 };
