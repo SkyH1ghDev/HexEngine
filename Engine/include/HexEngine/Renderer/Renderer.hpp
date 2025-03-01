@@ -5,6 +5,8 @@
 #include <DirectXMath.h>
 #include <SDL3/SDL.h>
 
+#include "ImGuiTool.hpp"
+
 namespace MW = Microsoft::WRL;
 namespace DX = DirectX;
 
@@ -22,7 +24,11 @@ public:
 
 private:
     std::uint8_t g_NumFrames = 3;
+
+    // ImGui
+    ImGuiTool m_imguiTool;
     
+    // DirectX12
     #ifdef _DEBUG
     MW::ComPtr<ID3D12Debug> m_debugInterface;
     #endif

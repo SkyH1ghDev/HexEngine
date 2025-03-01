@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include "RendererSetup.hpp"
+#include "ImGui/imgui.h"
 
 Renderer::Renderer(const std::shared_ptr<SDL_Window>& window)
 {
