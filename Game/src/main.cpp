@@ -2,6 +2,7 @@
 
 #include <crtdbg.h>
 #include <HexEngine/Engine/EngineCore.hpp>
+#include <SDL3/SDL_init.h>
 
 
 int main(int argc, char* argv[])

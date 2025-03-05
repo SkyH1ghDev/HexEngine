@@ -3,9 +3,8 @@
 #include <directx/d3dx12.h>
 #include <dxgi1_6.h>
 #include <DirectXMath.h>
-#include <SDL3/SDL.h>
-
-#include "ImGuiTool.hpp"
+#include <HexEngine/SDL/SDLWindow.hpp>
+#include <HexEngine/Renderer/ImGui/ImGuiTool.hpp>
 
 namespace MW = Microsoft::WRL;
 namespace DX = DirectX;
@@ -13,20 +12,24 @@ namespace DX = DirectX;
 class Renderer {
 public:
     Renderer() = default;
-    Renderer(const std::shared_ptr<SDL_Window>& window);
-    ~Renderer() = default;
+    Renderer(const SDLWindow& window);
+    ~Renderer();
     Renderer(const Renderer& other) = default;
     Renderer& operator=(const Renderer& other) = default;
     Renderer(Renderer&& other) noexcept = default;
     Renderer& operator=(Renderer&& other) noexcept = default;
 
     void Render();
+    void Draw();
 
 private:
-    std::uint8_t g_NumFrames = 3;
+    std::uint8_t m_numFrames = 3;
+    bool m_VSync = 0;
 
     // ImGui
-    ImGuiTool m_imguiTool;
+    #if defined(_DEBUG)
+    MW::ComPtr<ID3D12DescriptorHeap> m_imGuiSRVDescriptorHeap;
+    #endif
     
     // DirectX12
     #ifdef _DEBUG
@@ -38,9 +41,14 @@ private:
     MW::ComPtr<IDXGISwapChain4> m_swapChain;
     MW::ComPtr<ID3D12DescriptorHeap> m_backBufferDescriptorHeap;
     std::vector<MW::ComPtr<ID3D12Resource>> m_backBuffers;
-    MW::ComPtr<ID3D12CommandAllocator> m_commandAllocator;
+    std::vector<MW::ComPtr<ID3D12CommandAllocator>> m_backBufferCommandAllocators;
     MW::ComPtr<ID3D12GraphicsCommandList> m_commandList;
-    MW::ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
     UINT m_rtvDescriptorSize;
     UINT m_backBufferIndex = 0;
+
+    // Synchronization
+    MW::ComPtr<ID3D12Fence> m_fence;
+    std::uint64_t m_fenceValue = 0;
+    std::vector<std::uint64_t> m_frameFenceValues = { 0, 0, 0 };
+    HANDLE m_fenceEvent = nullptr;
 };

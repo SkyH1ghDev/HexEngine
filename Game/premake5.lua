@@ -18,5 +18,6 @@ project "Game"
           "DirectX-Headers",
           "DirectX-Guids",
           "d3d12",
-          "DXGI"
+          "DXGI",
+          "ImGui"
     }

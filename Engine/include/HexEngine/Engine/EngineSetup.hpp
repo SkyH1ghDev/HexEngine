@@ -1,7 +1,6 @@
 #pragma once
 
-#include <SDL3/SDL.h>
-#include <memory>
+#include <HexEngine/SDL/SDLWindow.hpp>
 
 class EngineSetup
 {
@@ -14,7 +13,5 @@ public:
     EngineSetup& operator=(EngineSetup&& other) noexcept = default;
 
     // Init SDL3
-    static std::shared_ptr<SDL_Window> InitializeWindow();
-
-    // Init DirectX 12
+    static SDLWindow InitializeWindow();
 };

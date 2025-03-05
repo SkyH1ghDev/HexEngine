@@ -123,7 +123,7 @@ MW::ComPtr<ID3D12CommandQueue> RendererSetup::CreateCommandQueue(const MW::ComPt
     return commandQueue;
 }   
 
-MW::ComPtr<IDXGISwapChain4> RendererSetup::CreateSwapChain(const std::shared_ptr<SDL_Window>& window, const MW::ComPtr<ID3D12CommandQueue>& commandQueue, const std::uint32_t& width, const std::uint32_t& height, const std::uint32_t& bufferCount)
+MW::ComPtr<IDXGISwapChain4> RendererSetup::CreateSwapChain(const SDLWindow& window, const MW::ComPtr<ID3D12CommandQueue>& commandQueue, const std::uint32_t& width, const std::uint32_t& height, const std::uint32_t& bufferCount)
 {
     MW::ComPtr<IDXGISwapChain4> swapChain;
     MW::ComPtr<IDXGIFactory4> factory;
@@ -145,13 +145,12 @@ MW::ComPtr<IDXGISwapChain4> RendererSetup::CreateSwapChain(const std::shared_ptr
     swapChainDesc.SampleDesc =  {.Count = 1, .Quality = 0};
     swapChainDesc.BufferCount =     bufferCount;
     swapChainDesc.BufferUsage =     DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount =     bufferCount;
     swapChainDesc.Scaling =         DXGI_SCALING_STRETCH;
     swapChainDesc.SwapEffect =      DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swapChainDesc.AlphaMode =       DXGI_ALPHA_MODE_UNSPECIFIED;
     swapChainDesc.Flags =           CheckTearingSupport() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
-    const HWND hWnd = static_cast<HWND>(SDL_GetPointerProperty(SDL_GetWindowProperties(window.get()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr));
+    const HWND hWnd = static_cast<HWND>(SDL_GetPointerProperty(SDL_GetWindowProperties(window.GetSDLWindow()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr));
     
     MW::ComPtr<IDXGISwapChain1> swapChain1;
     DX::ThrowIfFailed
@@ -180,15 +179,16 @@ MW::ComPtr<ID3D12DescriptorHeap> RendererSetup::CreateDescriptorHeap(const MW::C
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
     desc.NumDescriptors = numDescriptors;
     desc.Type = type;
+    desc.Flags = type == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
     DX::ThrowIfFailed(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap)));
 
     return descriptorHeap;
 }
 
-std::vector<MW::ComPtr<ID3D12Resource>> RendererSetup::CreateBackBuffers(const MW::ComPtr<ID3D12Device2>& device, const MW::ComPtr<IDXGISwapChain4>& swapChain, const MW::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, const std::uint8_t& numBuffers)
+std::vector<MW::ComPtr<ID3D12Resource>> RendererSetup::CreateBackBuffers(const MW::ComPtr<ID3D12Device2>& device, const MW::ComPtr<IDXGISwapChain4>& swapChain, const MW::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, const std::uint8_t& numBuffers, UINT& rtvDescriptorSize)
 {
-    UINT rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(descriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
