@@ -19,12 +19,12 @@ public:
     Renderer(Renderer&& other) noexcept = default;
     Renderer& operator=(Renderer&& other) noexcept = default;
 
-    void Render();
+    void Render() const;
     void Draw();
 
 private:
     std::uint8_t m_numFrames = 3;
-    bool m_VSync = 0;
+    bool m_VSync = false;
 
     // ImGui
     #if defined(_DEBUG)

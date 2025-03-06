@@ -13,8 +13,6 @@ public:
     static void Run();
     static void Quit();
 
-    static void QuitCallback();
-
 private:
     static bool m_shouldRun;
 };

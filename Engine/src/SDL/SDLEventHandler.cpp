@@ -1,10 +1,9 @@
 #include "SDLEventHandler.hpp"
+#include <HexEngine/Input/Input.hpp>
+#include <HexEngine/Engine/EngineLoop.hpp>
 
 #include <SDL3/SDL_events.h>
-#include <SDL3/SDL_init.h>
 
-#include "EngineCore.hpp"
-#include "Input.hpp"
 
 void SDLEventHandler::HandleEvents()
 {
@@ -22,7 +21,7 @@ void SDLEventHandler::HandleEvents()
                 break;
 
             case SDL_EVENT_QUIT:
-                EngineCore::Quit();
+                EngineLoop::Stop();
                 break;
                 
             default:

@@ -16,11 +16,11 @@ public:
     static void Update();
     
     static void UpdateKey(const SDL_Scancode& scancode, const bool& isPressed);
-    static void BindKey();
-    static void UnbindKey();
+    static void BindKey(const SDL_Scancode& scancode, const std::function<void()>& callbackFunc);
+    static void UnbindKey(const SDL_Scancode& scancode, const std::function<void()>& callbackFunc);
     
 private:
-    static std::unordered_map<SDL_Scancode, std::function<void()>> m_keyBinds;
+    static std::unordered_map<SDL_Scancode, std::vector<std::function<void()>>> m_keyBinds;
     static std::unordered_map<SDL_Scancode, bool> m_keyStates;
     
 };

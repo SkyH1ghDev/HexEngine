@@ -18,6 +18,7 @@ void ImGuiTool::Initialize(const SDLWindow& window, const MW::ComPtr<ID3D12Devic
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     io.ConfigViewportsNoAutoMerge = true;
+	io.ConfigViewportsNoTaskBarIcon = true;
 
     ImGui::StyleColorsDark();
 

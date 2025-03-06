@@ -74,7 +74,7 @@ void Renderer::Draw()
 }
 
 
-void Renderer::Render()
+void Renderer::Render() const
 {
     const MW::ComPtr<ID3D12CommandAllocator> currentCommandAllocator = m_backBufferCommandAllocators.at(m_backBufferIndex);
     const MW::ComPtr<ID3D12Resource> currentBackBuffer = m_backBuffers.at(m_backBufferIndex);
@@ -118,7 +118,5 @@ void Renderer::Render()
         };
 
         m_commandQueue->ExecuteCommandLists(static_cast<std::uint32_t>(commandLists.size()), commandLists.data());
-
-        
     }
 }
