@@ -2,10 +2,8 @@
 
 #include <crtdbg.h>
 #include <HexEngine/Engine/EngineCore.hpp>
-#include <SDL3/SDL_init.h>
 
-
-int main(int argc, char* argv[])
+int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     

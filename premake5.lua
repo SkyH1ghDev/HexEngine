@@ -5,6 +5,8 @@ workspace "HexEngine"
 
     location "Generated"
     cppdialect "C++23"
+    warnings "Extra"
+    fatalwarnings { "All" }
     configurations
     {
         "debug",
@@ -18,6 +20,7 @@ workspace "HexEngine"
         runtime "Debug"
         defines { "DEBUG" }
         symbols "On"
+        optimize "Off"
     filter "configurations:release"
         runtime "Release"
         defines { "NDEBUG" }

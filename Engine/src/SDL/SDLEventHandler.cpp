@@ -21,7 +21,7 @@ void SDLEventHandler::HandleEvents()
                 break;
 
             case SDL_EVENT_QUIT:
-                EngineLoop::Stop();
+                EngineLoop::Stop(true);
                 break;
                 
             default:

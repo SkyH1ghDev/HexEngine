@@ -9,19 +9,20 @@ bool EngineLoop::m_isRunning = true;
 void EngineLoop::Run(Renderer& renderer)
 {
     Input::BindKey(SDL_SCANCODE_ESCAPE, Stop);
-    Input::UnbindKey(SDL_SCANCODE_ESCAPE, Stop);
     
     while (m_isRunning)
     {
+        Input::Update();
+        
         renderer.Draw();
         
         SDLEventHandler::HandleEvents();
         Clock::Update();
-        Input::Update();
     }
 }
 
-void EngineLoop::Stop()
+void EngineLoop::Stop(const bool& keyState)
 {
-    m_isRunning = false;
+    bool isRunning = !keyState;
+    m_isRunning = isRunning;
 }

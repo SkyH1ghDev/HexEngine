@@ -3,10 +3,12 @@
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_impl_sdl3.h>
 #include <ImGui/imgui_impl_dx12.h>
+#include <SDL3/SDL_mouse.h>
+#include <HexEngine/Renderer/RendererSetup.hpp>
 
-#include "RendererSetup.hpp"
 
 ImGuiHeapAllocator ImGuiTool::m_descriptorHeapAllocator = {};
+std::array<std::uint8_t, 2> ImGuiTool::m_mouseButtons = { 0, 0 };
 
 void ImGuiTool::Initialize(const SDLWindow& window, const MW::ComPtr<ID3D12Device2>& device, const MW::ComPtr<ID3D12CommandQueue>& commandQueue, const MW::ComPtr<ID3D12DescriptorHeap>& srvDescriptorHeap, const DXGI_FORMAT& backBufferFormat, const UINT& maxFrameIndex)
 {
@@ -17,6 +19,7 @@ void ImGuiTool::Initialize(const SDLWindow& window, const MW::ComPtr<ID3D12Devic
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	// io.WantCaptureMouse = true;
     io.ConfigViewportsNoAutoMerge = true;
 	io.ConfigViewportsNoTaskBarIcon = true;
 
@@ -37,6 +40,7 @@ void ImGuiTool::Initialize(const SDLWindow& window, const MW::ComPtr<ID3D12Devic
     initInfo.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)            { return m_descriptorHeapAllocator.Deallocate(cpu_handle, gpu_handle); };
 
     ImGui_ImplDX12_Init(&initInfo);
+
 }
 
 void ImGuiTool::Start()
@@ -48,9 +52,14 @@ void ImGuiTool::Start()
 
 void ImGuiTool::Run()
 {
+	ImGui::ShowDemoWindow();
 	ImGuiIO& io = ImGui::GetIO();
 
-	ImGui::ShowDemoWindow();
+	std::uint32_t mouseButtons = SDL_GetMouseState(nullptr, nullptr);
+	
+	io.MouseDown[0] = (mouseButtons & SDL_BUTTON_LEFT) != 0;
+	io.MouseDown[1] = (mouseButtons & SDL_BUTTON_RIGHT) != 0;
+	
 
 	// Windows
 	ImGuiTabBarFlags mainTabBarFlags = ImGuiTabBarFlags_None;
@@ -67,7 +76,7 @@ void ImGuiTool::Run()
 	ImGui::Render();
 }
 
-void ImGuiTool::RenderDrawData(const MW::ComPtr<ID3D12GraphicsCommandList>&commandList)
+void ImGuiTool::RenderDrawData(const MW::ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());	
 }
