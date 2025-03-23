@@ -12,7 +12,7 @@ public:
     EngineLoop& operator=(EngineLoop&& other) noexcept = default;
 
     static void Run(Renderer& renderer);
-    static void Stop(const bool& keyState);
+    static void Stop();
     
 private:
     static bool m_isRunning;

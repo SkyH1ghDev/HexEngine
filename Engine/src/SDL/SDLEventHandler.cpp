@@ -5,7 +5,6 @@
 #include <SDL3/SDL_events.h>
 #include <ImGui/imgui_impl_sdl3.h>
 
-
 void SDLEventHandler::HandleEvents()
 {
     SDL_Event event;
@@ -24,7 +23,7 @@ void SDLEventHandler::HandleEvents()
                 break;
 
             case SDL_EVENT_QUIT:
-                EngineLoop::Stop(true);
+                EngineLoop::Stop();
                 break;
                 
             default:

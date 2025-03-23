@@ -8,7 +8,6 @@ bool EngineLoop::m_isRunning = true;
 
 void EngineLoop::Run(Renderer& renderer)
 {
-    Input::BindKey(SDL_SCANCODE_ESCAPE, Stop);
     
     while (m_isRunning)
     {
@@ -23,8 +22,7 @@ void EngineLoop::Run(Renderer& renderer)
     renderer.Cleanup();
 }
 
-void EngineLoop::Stop(const bool& keyState)
+void EngineLoop::Stop()
 {
-    bool isRunning = !keyState;
-    m_isRunning = isRunning;
+    m_isRunning = false;
 }

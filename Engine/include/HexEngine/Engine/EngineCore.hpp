@@ -12,6 +12,8 @@ public:
     
     static void Run();
     static void Quit();
+    
+    static void PostQuitEvent_Callback(bool keyState);
 
 private:
     static bool m_shouldRun;

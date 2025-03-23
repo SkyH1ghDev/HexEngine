@@ -12,6 +12,7 @@ void EngineCore::Run()
 {
     {
         Input::Initialize();
+        Input::BindKey(SDL_SCANCODE_ESCAPE, PostQuitEvent_Callback);
         
         SDLWindow window(EngineSetup::InitializeWindow());
         Renderer renderer = Renderer(window);
@@ -26,5 +27,22 @@ void EngineCore::Quit()
 {
     SDL_Quit();
 }
+
+void EngineCore::PostQuitEvent_Callback(bool keyState)
+{
+    if (!keyState)
+    {
+        return;
+    }
+    
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_EVENT_QUIT;
+    event.user.code = 0;
+    event.user.data1 = nullptr;
+    event.user.data2 = nullptr;
+    SDL_PushEvent(&event);
+}
+
 
 
