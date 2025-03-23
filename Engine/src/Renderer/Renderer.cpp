@@ -116,3 +116,13 @@ void Renderer::Render()
         m_commandQueue.ExecuteCommandLists();
     }
 }
+
+void Renderer::Cleanup() const
+{
+    std::vector<BackBuffer> backBuffers = m_swapChainManager.GetBackBuffers();
+
+    for (BackBuffer backBuffer : backBuffers)
+    {
+        m_fence.Flush(backBuffer.GetFenceValue());
+    }
+}

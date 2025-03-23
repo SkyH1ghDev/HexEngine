@@ -30,7 +30,7 @@ void ImGuiTool::Initialize(const SDLWindow& window, const Device& device, const 
 	winrt::com_ptr<ID3D12DescriptorHeap> descriptorHeap = m_descriptorHeapAllocator.GetDescriptorHeap();
     
     ImGui_ImplDX12_InitInfo initInfo = {};
-    initInfo.Device = device.GetCOM().get();
+    initInfo.Device = device.GetRaw();
     initInfo.CommandQueue = commandQueue.GetCOM().get();
     initInfo.NumFramesInFlight = static_cast<std::int32_t>(maxFrameIndex);
     initInfo.RTVFormat = backBufferFormat;
@@ -51,13 +51,6 @@ void ImGuiTool::Start()
 
 void ImGuiTool::Run()
 {
-	ImGuiIO& io = ImGui::GetIO();
-
-	std::uint32_t mouseButtons = SDL_GetMouseState(nullptr, nullptr);
-	
-	io.MouseDown[0] = (mouseButtons & SDL_BUTTON_LEFT) != 0;
-	io.MouseDown[1] = (mouseButtons & SDL_BUTTON_RIGHT) != 0;
-	
 	// Windows
 	ImGui::ShowDemoWindow();
 	

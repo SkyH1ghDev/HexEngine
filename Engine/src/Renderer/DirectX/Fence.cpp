@@ -26,10 +26,8 @@ void Fence::WaitForValue(std::uint64_t fenceValue, const std::chrono::millisecon
     }
 }
 
-std::uint64_t Fence::Flush(std::uint64_t fenceValue)
+void Fence::Flush(std::uint64_t fenceValue) const
 {
     fenceValue = Signal(fenceValue);
     WaitForValue(fenceValue);
-
-    return fenceValue;
 }

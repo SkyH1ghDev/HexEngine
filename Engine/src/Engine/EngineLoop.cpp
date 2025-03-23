@@ -19,6 +19,8 @@ void EngineLoop::Run(Renderer& renderer)
         SDLEventHandler::HandleEvents();
         Clock::Update();
     }
+
+    renderer.Cleanup();
 }
 
 void EngineLoop::Stop(const bool& keyState)

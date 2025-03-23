@@ -22,6 +22,7 @@ public:
 
     void Render();
     void Draw();
+    void Cleanup() const;
 
 private:
     std::uint8_t m_numFrames = 3;
