@@ -10,7 +10,7 @@
 ImGuiHeapAllocator ImGuiTool::m_descriptorHeapAllocator = {};
 std::array<std::uint8_t, 2> ImGuiTool::m_mouseButtons = { 0, 0 };
 
-void ImGuiTool::Initialize(const SDLWindow& window, const MW::ComPtr<ID3D12Device2>& device, const MW::ComPtr<ID3D12CommandQueue>& commandQueue, const MW::ComPtr<ID3D12DescriptorHeap>& srvDescriptorHeap, const DXGI_FORMAT& backBufferFormat, const UINT& maxFrameIndex)
+void ImGuiTool::Initialize(const SDLWindow& window, const Device& device, const CommandQueue& commandQueue, const DescriptorHeap& srvDescriptorHeap, DXGI_FORMAT backBufferFormat, std::uint64_t maxFrameIndex)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -19,7 +19,6 @@ void ImGuiTool::Initialize(const SDLWindow& window, const MW::ComPtr<ID3D12Devic
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-	// io.WantCaptureMouse = true;
     io.ConfigViewportsNoAutoMerge = true;
 	io.ConfigViewportsNoTaskBarIcon = true;
 
@@ -28,17 +27,17 @@ void ImGuiTool::Initialize(const SDLWindow& window, const MW::ComPtr<ID3D12Devic
     ImGui_ImplSDL3_InitForD3D(window.GetSDLWindow());
 
     m_descriptorHeapAllocator = ImGuiHeapAllocator(device, srvDescriptorHeap);
+	winrt::com_ptr<ID3D12DescriptorHeap> descriptorHeap = m_descriptorHeapAllocator.GetDescriptorHeap();
     
     ImGui_ImplDX12_InitInfo initInfo = {};
-    initInfo.Device = device.Get();
-    initInfo.CommandQueue = commandQueue.Get();
+    initInfo.Device = device.GetCOM().get();
+    initInfo.CommandQueue = commandQueue.GetCOM().get();
     initInfo.NumFramesInFlight = static_cast<std::int32_t>(maxFrameIndex);
     initInfo.RTVFormat = backBufferFormat;
     initInfo.DSVFormat = DXGI_FORMAT_UNKNOWN;
-    initInfo.SrvDescriptorHeap = m_descriptorHeapAllocator.GetDescriptorHeap().Get();
+    initInfo.SrvDescriptorHeap = descriptorHeap.get();
     initInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) { return m_descriptorHeapAllocator.Allocate(out_cpu_handle, out_gpu_handle); };
     initInfo.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)            { return m_descriptorHeapAllocator.Deallocate(cpu_handle, gpu_handle); };
-
     ImGui_ImplDX12_Init(&initInfo);
 
 }
@@ -52,7 +51,6 @@ void ImGuiTool::Start()
 
 void ImGuiTool::Run()
 {
-	ImGui::ShowDemoWindow();
 	ImGuiIO& io = ImGui::GetIO();
 
 	std::uint32_t mouseButtons = SDL_GetMouseState(nullptr, nullptr);
@@ -60,8 +58,9 @@ void ImGuiTool::Run()
 	io.MouseDown[0] = (mouseButtons & SDL_BUTTON_LEFT) != 0;
 	io.MouseDown[1] = (mouseButtons & SDL_BUTTON_RIGHT) != 0;
 	
-
 	// Windows
+	ImGui::ShowDemoWindow();
+	
 	ImGuiTabBarFlags mainTabBarFlags = ImGuiTabBarFlags_None;
 
 	ImGui::BeginTabBar("main", mainTabBarFlags);
@@ -72,13 +71,13 @@ void ImGuiTool::Run()
 	}
 
 	ImGui::EndTabBar();
-
+	
 	ImGui::Render();
 }
 
-void ImGuiTool::RenderDrawData(const MW::ComPtr<ID3D12GraphicsCommandList>& commandList)
+void ImGuiTool::RenderDrawData(const CommandList& commandList)
 {
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());	
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.GetRaw());	
 }
 
 void ImGuiTool::End()

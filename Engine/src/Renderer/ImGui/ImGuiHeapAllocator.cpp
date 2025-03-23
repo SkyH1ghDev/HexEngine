@@ -1,24 +1,19 @@
 #include "ImGuiHeapAllocator.hpp"
 
-ImGuiHeapAllocator::ImGuiHeapAllocator(const MW::ComPtr<ID3D12Device>& device, const MW::ComPtr<ID3D12DescriptorHeap>& descriptorHeap)
+ImGuiHeapAllocator::ImGuiHeapAllocator(const Device& device, const DescriptorHeap& descriptorHeap)
 {
-    m_descriptorHeap = descriptorHeap;
+    m_descriptorHeap = descriptorHeap.GetCOM();
     
     D3D12_DESCRIPTOR_HEAP_DESC desc = m_descriptorHeap->GetDesc();
     m_heapStartCPU = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart();
     m_heapStartGPU = m_descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-    m_heapHandleIncrement = device->GetDescriptorHandleIncrementSize(desc.Type);
+    m_heapHandleIncrement = device.GetCOM()->GetDescriptorHandleIncrementSize(desc.Type);
     m_freeIndices.reserve(static_cast<int>(desc.NumDescriptors));
 
     for (std::uint32_t i = desc.NumDescriptors; i > 0; i--)
     {
         m_freeIndices.push_back(i - 1);
     }
-}
-
-ImGuiHeapAllocator::~ImGuiHeapAllocator()
-{
-    m_freeIndices.clear();
 }
 
 void ImGuiHeapAllocator::Allocate(D3D12_CPU_DESCRIPTOR_HANDLE* cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE* gpuHandle)

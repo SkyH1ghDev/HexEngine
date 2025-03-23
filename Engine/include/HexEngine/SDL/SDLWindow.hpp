@@ -15,6 +15,7 @@ public:
     SDL_Window* GetSDLWindow() const;
     
 private:
+    // TODO: MAKE SMART POINTER OF THIS
     SDL_Window* m_window = nullptr;
     
 };

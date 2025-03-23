@@ -11,7 +11,7 @@ project "GoogleTest"
         kind "Utility"
         prebuildcommands{
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
+            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -19,7 +19,7 @@ project "GoogleTest"
         kind "Makefile"
         buildcommands{
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
+            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
