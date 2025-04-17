@@ -1,6 +1,5 @@
 #pragma once
 #include "ImGuiHeapAllocator.hpp"
-#include <array>
 #include <directx/d3dx12.h>
 #include <HexEngine/SDL/SDLWindow.hpp>
 #include <HexEngine/Renderer/DirectX/Device.hpp>
@@ -26,6 +25,5 @@ public:
 
 private:
     static ImGuiHeapAllocator m_descriptorHeapAllocator;
-    static std::array<std::uint8_t, 2> m_mouseButtons;
     
 };

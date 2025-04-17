@@ -10,7 +10,9 @@ void SDLEventHandler::HandleEvents()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        ImGui_ImplSDL3_ProcessEvent(&event);
+        #if defined(_DEBUG)
+            ImGui_ImplSDL3_ProcessEvent(&event);
+        #endif
         
         switch (event.type)
         {

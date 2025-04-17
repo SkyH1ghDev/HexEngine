@@ -10,7 +10,7 @@ project "Game"
 
     libdirs{targetBuildPath .. "/External/lib/"}
 
-    dependson{"SDL3", "Engine"}
+    dependson{"Engine"}
 
     links{"SDL3-static", "imagehlp", "setupapi", "user32", "version", "uuid", "winmm", "imm32", 
           "Engine",

@@ -9,4 +9,4 @@ project "Engine"
     includedirs {"include/", "include/**",  targetBuildPath .. "/External/include/"}
     libdirs {targetBuildPath .. "/External/lib/"}
 
-    dependson{"SDL3", "ImGui"}
+    dependson{"SDL3", "DirectXToolKit", "DirectXHeaders", "ImGui"}

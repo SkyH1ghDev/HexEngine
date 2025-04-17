@@ -1,6 +1,8 @@
 #include "Renderer.hpp"
 
-#include <HexEngine/Renderer/ImGui/ImGuiTool.hpp>
+#if defined(_DEBUG)
+    #include <HexEngine/Renderer/ImGui/ImGuiTool.hpp>
+#endif 
 #include <HexEngine/Renderer/DirectX/DirectXUtils.hpp>
 #include <HexEngine/Renderer/RendererSetup.hpp>
 
@@ -97,11 +99,15 @@ void Renderer::Render()
 
         std::vector<ID3D12DescriptorHeap*> descriptorHeaps =
         {
+            #if defined(_DEBUG)
             m_imGuiDescriptorHeap.GetRaw()
+            #endif
         };
         
         m_commandList->SetDescriptorHeaps(static_cast<std::uint32_t>(descriptorHeaps.size()), descriptorHeaps.data());
+        #if defined(_DEBUG)
         ImGuiTool::RenderDrawData(m_commandList);
+        #endif
     }
 
     // Present

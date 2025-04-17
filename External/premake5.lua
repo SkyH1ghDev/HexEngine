@@ -1,3 +1,10 @@
+local msvcRTLibFlag = nil
+filter "configurations:debug"
+    msvcRTLibFlag = "-DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'"
+
+filter "configurations:release"
+    msvcRTLibFlag = "-DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded'"
+
 project "GoogleTest"
     kind "StaticLib"
 
@@ -6,12 +13,12 @@ project "GoogleTest"
 
     targetdir(targetBuildPath .. "/External")
     objdir(objBuildPath .. "/%{prj.name}")
-
+    
     filter "system:windows"
         kind "Utility"
         prebuildcommands{
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
+            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} " .. msvcRTLibFlag,
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -19,7 +26,7 @@ project "GoogleTest"
         kind "Makefile"
         buildcommands{
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
+            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -36,7 +43,7 @@ project "SDL3"
         kind "Utility"
         prebuildcommands{
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug' -DSDL_STATIC=ON -DSDL_SHARED=OFF -DSDL_LIBC=ON",
+            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DSDL_STATIC=ON -DSDL_SHARED=OFF -DSDL_LIBC=ON " .. msvcRTLibFlag,
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -44,22 +51,26 @@ project "SDL3"
         kind "Makefile"
         buildcommands{
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug' -DSDL_STATIC=ON -DSDL_SHARED=OFF -DSDL_LIBC=ON",
+            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DSDL_STATIC=ON -DSDL_SHARED=OFF -DSDL_LIBC=ON",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
 project "DirectXToolKit"
+    kind "StaticLib"
+
+    moduleDir = "\"" .. path.getdirectory(_SCRIPT) .. "\"" .. "/%{prj.name}"
+    location(projectsPath)
+
     targetdir(targetBuildPath .. "/External")
     objdir(objBuildPath .. "/%{prj.name}")
 
-    libraryDir = "\"" .. path.getdirectory(_SCRIPT) .. "\"" .. "/%{prj.name}"
 
     filter "system:windows"
         kind "Utility"
         prebuildcommands
         {
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. libraryDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
+            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} " .. msvcRTLibFlag,
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -68,22 +79,25 @@ project "DirectXToolKit"
         buildcommands
         {
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. libraryDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
+            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
 project "DirectXHeaders"
+    kind "StaticLib"
+
+    moduleDir = "\"" .. path.getdirectory(_SCRIPT) .. "\"" .. "/%{prj.name}"
+    location(projectsPath)
+
     targetdir(targetBuildPath .. "/External")
     objdir(objBuildPath .. "/%{prj.name}")
-
-    libraryDir = "\"" .. path.getdirectory(_SCRIPT) .. "\"" .. "/%{prj.name}"
 
     filter "system:windows"
     kind "Utility"
         prebuildcommands
         {
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. libraryDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
+            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DDXHEADERS_BUILD_TEST=FALSE -DDXHEADERS_BUILD_GOOGLE_TEST=FALSE " .. msvcRTLibFlag,
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -92,12 +106,16 @@ project "DirectXHeaders"
         buildcommands
         {
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. libraryDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
+            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
 project "ImGui"
     kind "StaticLib"
+    location(projectsPath)
+
+    warnings "Off"
+
     targetdir(targetBuildPath .. "/External/lib/")
     objdir(objBuildPath .. "/%{prj.name}")
 
@@ -120,7 +138,7 @@ project "ImGui"
 
     prebuildcommands{
         "{MKDIR} " .. mkdirPath,
-        "{COPY} ../External/ImGui/*.h " .. copyPath,
-        "{COPY} ../External/ImGui/backends/imgui_impl_dx12.h " .. copyPath,
-        "{COPY} ../External/ImGui/backends/imgui_impl_SDL3.h " .. copyPath
+        "{COPY} " .. rootPath .. "/External/ImGui/*.h " .. copyPath,
+        "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_dx12.h " .. copyPath,
+        "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_SDL3.h " .. copyPath
     }

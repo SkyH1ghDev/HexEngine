@@ -28,7 +28,7 @@ void ImGuiHeapAllocator::Allocate(D3D12_CPU_DESCRIPTOR_HANDLE* cpuHandle, D3D12_
 void ImGuiHeapAllocator::Deallocate(const D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandle, const D3D12_GPU_DESCRIPTOR_HANDLE& gpuHandle)
 {
     std::uint64_t cpuIndex = (cpuHandle.ptr - m_heapStartCPU.ptr) / m_heapHandleIncrement;
-    std::uint64_t gpuIndex = (gpuHandle.ptr - m_heapStartGPU.ptr) / m_heapHandleIncrement;
+    [[maybe_unused]] std::uint64_t gpuIndex = (gpuHandle.ptr - m_heapStartGPU.ptr) / m_heapHandleIncrement;
 
     IM_ASSERT(cpuIndex == gpuIndex);
     m_freeIndices.push_back(cpuIndex);

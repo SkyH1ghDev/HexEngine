@@ -3,12 +3,9 @@
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_impl_sdl3.h>
 #include <ImGui/imgui_impl_dx12.h>
-#include <SDL3/SDL_mouse.h>
 #include <HexEngine/Renderer/RendererSetup.hpp>
 
-
 ImGuiHeapAllocator ImGuiTool::m_descriptorHeapAllocator = {};
-std::array<std::uint8_t, 2> ImGuiTool::m_mouseButtons = { 0, 0 };
 
 void ImGuiTool::Initialize(const SDLWindow& window, const Device& device, const CommandQueue& commandQueue, const DescriptorHeap& srvDescriptorHeap, DXGI_FORMAT backBufferFormat, std::uint64_t maxFrameIndex)
 {
@@ -60,6 +57,7 @@ void ImGuiTool::Run()
 
 	if (ImGui::BeginTabItem("Test"))
 	{
+		ImGui::SeparatorText("Clear Colour");
 		ImGui::EndTabItem();
 	}
 

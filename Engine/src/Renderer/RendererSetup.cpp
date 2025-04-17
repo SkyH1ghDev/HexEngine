@@ -7,18 +7,18 @@
 
 namespace DXUtils = DirectXUtils;
 
+#if defined(_DEBUG) 
 DebugLayer RendererSetup::CreateDebugLayer()
 {
     // Enables Debug Layer
-    #ifdef _DEBUG
 
-        winrt::com_ptr<ID3D12Debug6> debugInterface;
-        DXUtils::ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
-        debugInterface->EnableDebugLayer();
-        return DebugLayer(debugInterface);
+    winrt::com_ptr<ID3D12Debug6> debugInterface;
+    DXUtils::ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
+    debugInterface->EnableDebugLayer();
+    return DebugLayer(debugInterface);
     
-    #endif
 }
+#endif
 
 Device RendererSetup::CreateDevice()
 {
@@ -27,7 +27,7 @@ Device RendererSetup::CreateDevice()
     winrt::com_ptr<IDXGIFactory7> dxgiFactory;
     UINT createFactoryFlags = 0;
     
-    #ifdef _DEBUG
+    #if defined(_DEBUG)
         createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
     #endif
     

@@ -22,7 +22,9 @@ public:
     RendererSetup& operator=(RendererSetup&& other) noexcept = default;
 
     // DEBUG
-    static DebugLayer CreateDebugLayer();
+    #if defined(_DEBUG)
+        static DebugLayer CreateDebugLayer();
+    #endif
     
     static Device CreateDevice();
     static CommandQueue CreateCommandQueue(const Device& device, D3D12_COMMAND_LIST_TYPE type);
