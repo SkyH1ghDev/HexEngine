@@ -1,3 +1,5 @@
-Build
-Generated
+Build/
+Generated/
+*.sln
+.idea/
 .vscode/
