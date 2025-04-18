@@ -1,5 +1,5 @@
 #pragma once
-#include "Resource.hpp"
+#include <HexEngine/Renderer/DirectX/Resource.hpp>
 
 class VertexBuffer {
 public:

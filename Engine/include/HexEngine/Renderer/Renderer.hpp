@@ -1,5 +1,4 @@
 #pragma once
-#include <directx/d3dx12.h>
 #include <DirectXMath.h>
 #include <HexEngine/SDL/SDLWindow.hpp>
 #include <HexEngine/Renderer/DirectX/DebugLayer.hpp>
