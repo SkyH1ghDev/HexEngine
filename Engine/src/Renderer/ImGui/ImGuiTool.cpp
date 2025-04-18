@@ -5,7 +5,7 @@
 #include <ImGui/imgui_impl_dx12.h>
 #include <HexEngine/Renderer/RendererSetup.hpp>
 
-ImGuiHeapAllocator ImGuiTool::m_descriptorHeapAllocator = {};
+ImGuiHeapAllocator ImGuiTool::s_descriptorHeapAllocator = {};
 
 void ImGuiTool::Initialize(const SDLWindow& window, const Device& device, const CommandQueue& commandQueue, const DescriptorHeap& srvDescriptorHeap, DXGI_FORMAT backBufferFormat, std::uint64_t maxFrameIndex)
 {
@@ -23,8 +23,8 @@ void ImGuiTool::Initialize(const SDLWindow& window, const Device& device, const 
 
     ImGui_ImplSDL3_InitForD3D(window.GetSDLWindow());
 
-    m_descriptorHeapAllocator = ImGuiHeapAllocator(device, srvDescriptorHeap);
-	winrt::com_ptr<ID3D12DescriptorHeap> descriptorHeap = m_descriptorHeapAllocator.GetDescriptorHeap();
+    s_descriptorHeapAllocator = ImGuiHeapAllocator(device, srvDescriptorHeap);
+	winrt::com_ptr<ID3D12DescriptorHeap> descriptorHeap = s_descriptorHeapAllocator.GetDescriptorHeap();
     
     ImGui_ImplDX12_InitInfo initInfo = {};
     initInfo.Device = device.GetRaw();
@@ -33,10 +33,9 @@ void ImGuiTool::Initialize(const SDLWindow& window, const Device& device, const 
     initInfo.RTVFormat = backBufferFormat;
     initInfo.DSVFormat = DXGI_FORMAT_UNKNOWN;
     initInfo.SrvDescriptorHeap = descriptorHeap.get();
-    initInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) { return m_descriptorHeapAllocator.Allocate(out_cpu_handle, out_gpu_handle); };
-    initInfo.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)            { return m_descriptorHeapAllocator.Deallocate(cpu_handle, gpu_handle); };
+    initInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) { return s_descriptorHeapAllocator.Allocate(out_cpu_handle, out_gpu_handle); };
+    initInfo.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)            { return s_descriptorHeapAllocator.Deallocate(cpu_handle, gpu_handle); };
     ImGui_ImplDX12_Init(&initInfo);
-
 }
 
 void ImGuiTool::Start()
@@ -50,18 +49,11 @@ void ImGuiTool::Run()
 {
 	// Windows
 	ImGui::ShowDemoWindow();
+
+	ImGui::Begin("Bingus");
+	ImGui::Text("Hello World");
+	ImGui::End();
 	
-	ImGuiTabBarFlags mainTabBarFlags = ImGuiTabBarFlags_None;
-
-	ImGui::BeginTabBar("main", mainTabBarFlags);
-
-	if (ImGui::BeginTabItem("Test"))
-	{
-		ImGui::SeparatorText("Clear Colour");
-		ImGui::EndTabItem();
-	}
-
-	ImGui::EndTabBar();
 	
 	ImGui::Render();
 }

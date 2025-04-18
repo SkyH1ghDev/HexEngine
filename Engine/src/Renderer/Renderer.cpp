@@ -2,7 +2,8 @@
 
 #if defined(_DEBUG)
     #include <HexEngine/Renderer/ImGui/ImGuiTool.hpp>
-#endif 
+#endif
+
 #include <HexEngine/Renderer/DirectX/DirectXUtils.hpp>
 #include <HexEngine/Renderer/RendererSetup.hpp>
 

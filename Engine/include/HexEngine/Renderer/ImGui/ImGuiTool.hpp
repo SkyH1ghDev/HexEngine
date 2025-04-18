@@ -24,6 +24,6 @@ public:
     static void Shutdown();
 
 private:
-    static ImGuiHeapAllocator m_descriptorHeapAllocator;
+    static ImGuiHeapAllocator s_descriptorHeapAllocator;
     
 };
