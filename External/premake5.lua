@@ -9,6 +9,7 @@ project "GoogleTest"
     
     filter "system:windows"
         kind "Utility"
+
         filter "configurations:release"
             prebuildcommands{
                 "{MKDIR} %{prj.objdir}",
@@ -26,7 +27,7 @@ project "GoogleTest"
         kind "Makefile"
         buildcommands{
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
+            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} ",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -81,7 +82,7 @@ project "DirectXToolKit"
                 "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded'",
                 "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
             }
-        
+
         filter "configurations:debug"
             prebuildcommands
             {
@@ -95,7 +96,7 @@ project "DirectXToolKit"
         buildcommands
         {
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
+            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_CXX_COMPILER=wineg++ -DDIRECTX_DXC_TOOL='/usr/bin/wine cmd dxc'",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -131,7 +132,7 @@ project "DirectXHeaders"
         buildcommands
         {
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
+            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_CXX_COMPILER=/bin/wineg++ -DDXHEADERS_BUILD_TEST=FALSE -DDXHEADERS_BUILD_GOOGLE_TEST=FALSE",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -149,7 +150,7 @@ project "ImGui"
     files {
         "ImGui/imgui*.cpp",
         "ImGui/backends/imgui_impl_dx12.cpp",
-        "ImGui/backends/imgui_impl_SDL3.cpp"
+        "ImGui/backends/imgui_impl_sdl3.cpp"
     }
 
     includedirs{
@@ -161,9 +162,25 @@ project "ImGui"
     mkdirPath = "\"" .. targetBuildPath .. "/External/include/%{prj.name}\""
     copyPath = "\"" .. targetBuildPath .. "/External/include/%{prj.name}\""
 
-    prebuildcommands{
-        "{MKDIR} " .. mkdirPath,
-        "{COPY} " .. rootPath .. "/External/ImGui/*.h " .. copyPath,
-        "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_dx12.h " .. copyPath,
-        "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_SDL3.h " .. copyPath
-    }
+    filter "system:windows"
+        prebuildcommands{
+            "{MKDIR} " .. mkdirPath,
+            "{COPY} " .. rootPath .. "/External/ImGui/*.h " .. copyPath,
+            "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_dx12.h " .. copyPath,
+            "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_SDL3.h " .. copyPath
+        }
+
+    filter "system:linux"
+
+        includedirs{
+            "ImGui/",
+            "ImGui/backends/",
+            targetBuildPath .. "/External/include/",
+        }
+
+        buildcommands{
+            "{MKDIR} " .. mkdirPath,
+            "{COPY} " .. rootPath .. "/External/ImGui/*.h " .. copyPath,
+            "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_dx12.h " .. copyPath,
+            "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_SDL3.h " .. copyPath
+        }

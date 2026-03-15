@@ -1,17 +1,14 @@
 require "clean"
 require "vscode"
+require "winegcc"
 
 workspace "HexEngine"
-    
-    location "./"
+
+    location "Generated"
     cppdialect "C++23"
     warnings "Extra"
     fatalwarnings { "All" }
-    configurations
-    {
-        "debug",
-        "release"
-    }
+    configurations { "debug", "release" }
 
     architecture "x86_64"
     staticruntime "on"
@@ -29,7 +26,7 @@ workspace "HexEngine"
     rootPath = path.getdirectory(_SCRIPT)
     targetBuildPath = path.getdirectory(_SCRIPT) .. "/Build/target"
     objBuildPath = path.getdirectory(_SCRIPT) .. "/Build/obj"
-    projectsPath = path.getdirectory(_SCRIPT) .. "/Generated/projects"
+    projectsPath = path.getdirectory(_SCRIPT) .. "/Generated"
 
 include "External"
 include "Engine"

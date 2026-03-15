@@ -5,21 +5,21 @@ project "Engine"
 
     targetdir(targetBuildPath .. "/%{prj.name}")
     objdir(objBuildPath .. "/%{prj.name}")
-    includedirs {"include/", "include/**",  targetBuildPath .. "/External/include/"}
+    includedirs {"include/", "include/**",  targetBuildPath .. "/External/include/", "/usr/include/wine/msvcrt"}
     libdirs {targetBuildPath .. "/External/lib/"}
-    dependson{"SDL3", "DirectXToolKit", "DirectXHeaders", "ImGui"}
-    buildoptions { "/FIEnginePCH.hpp" }
+    dependson{"SDL3", --[["DirectXToolKit", "DirectXHeaders", "ImGui"]]}
+    --buildoptions { "-FIEnginePCH.hpp" }
 
     files {
-        "include/PCH/EnginePCH.hpp",
-        "src/PCH/EnginePCH.cpp",
+        --"include/PCH/EnginePCH.hpp",
+        --"src/PCH/EnginePCH.cpp",
         "include/**.hpp", 
         "src/**.cpp", 
         "src/**.hlsl"
     }
 
-    pchheader "EnginePCH.hpp"
-    pchsource "src/PCH/EnginePCH.cpp"
+    --pchheader "EnginePCH.hpp"
+    --pchsource "src/PCH/EnginePCH.cpp"
 
     -- SHADER --
     shaderassembler("AssemblyCode")
@@ -70,4 +70,3 @@ project "Engine"
         shadertype("Compute")
 
     shaderoptions ({"/WX"})
-    
