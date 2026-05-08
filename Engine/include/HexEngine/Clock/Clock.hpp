@@ -16,9 +16,9 @@ public:
     static double GetDeltaTime();
     
 private:
-    static std::uint64_t frameCount;
-    static double elapsedSeconds;
-    static std::chrono::high_resolution_clock::time_point t0;
-    static std::chrono::high_resolution_clock::time_point t1;
-    static std::chrono::high_resolution_clock::duration deltaTime;
+    static std::uint64_t m_frameCount;
+    static double m_elapsedSeconds;
+    static std::chrono::high_resolution_clock::time_point m_t0;
+    static std::chrono::high_resolution_clock::time_point m_t1;
+    static std::chrono::high_resolution_clock::duration m_deltaTime;
 };
