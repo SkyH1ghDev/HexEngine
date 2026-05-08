@@ -63,6 +63,34 @@ project "SDL3"
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
+
+project "DirectXMesh"
+    kind "StaticLib"
+    location(projectsPath)
+
+    moduleDir = "\"" .. path.getdirectory(_SCRIPT) .. "\"" .. "/%{prj.name}"
+
+    targetdir(targetBuildPath .. "/External")
+    objdir(objBuildPath .. "/%{prj.name}")
+
+    filter "system:windows"
+        kind "Utility"
+        filter "configurations:release"
+            prebuildcommands
+            {
+                "{MKDIR} %{prj.objdir}",
+                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded'",
+                "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
+            }
+        
+        filter "configurations:debug"
+            prebuildcommands
+            {
+                "{MKDIR} %{prj.objdir}",
+                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
+                "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
+            }
+
 project "DirectXToolKit"
     kind "StaticLib"
     location(projectsPath)
