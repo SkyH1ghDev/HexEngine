@@ -1,6 +1,10 @@
+# PATHS
 Build/
 Generated/
-*.sln
 .idea/
 .vs/
 .vscode/
+
+# FILES
+*.sln
+premake5.exe
