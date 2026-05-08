@@ -79,7 +79,7 @@ project "DirectXMesh"
             prebuildcommands
             {
                 "{MKDIR} %{prj.objdir}",
-                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded'",
+                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DBUILD_TOOLS=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded'",
                 "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
             }
         
@@ -87,7 +87,7 @@ project "DirectXMesh"
             prebuildcommands
             {
                 "{MKDIR} %{prj.objdir}",
-                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
+                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DBUILD_TOOLS=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
                 "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
             }
 
