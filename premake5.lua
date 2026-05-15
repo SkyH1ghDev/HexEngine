@@ -6,6 +6,7 @@ workspace "HexEngine"
     location "./"
     cppdialect "C++23"
     warnings "Extra"
+	startproject "Game"
     fatalwarnings { "All" }
     configurations
     {
