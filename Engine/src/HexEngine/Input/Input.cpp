@@ -1,8 +1,5 @@
 #include "Input.hpp"
 
-std::unordered_map<SDL_Scancode, std::vector<std::function<void(const bool&)>>> Input::m_keyBinds = {};
-std::unordered_map<SDL_Scancode, bool> Input::m_keyStates = {};
-
 void Input::Initialize()
 {
     for (int i = SDL_SCANCODE_A; i <= SDL_SCANCODE_NONUSBACKSLASH; ++i)

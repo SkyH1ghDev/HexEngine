@@ -17,7 +17,6 @@ void CommandQueue::ExecuteCommandLists()
     }
     
     m_commandQueue->ExecuteCommandLists(static_cast<std::uint32_t>(m_commandLists.size()), commandLists.data());
-
     m_commandLists.clear();
 }
 

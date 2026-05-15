@@ -22,6 +22,7 @@ public:
     void ExecuteCommandLists();
 
     // GPU Sync
+    [[nodiscard]]
     std::uint64_t Signal(const Fence& fence, std::uint64_t fenceValue) const;
     void WaitForValue(const Fence& fence, std::uint64_t fenceValue) const;
 

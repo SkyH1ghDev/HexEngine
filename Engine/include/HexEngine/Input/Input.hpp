@@ -21,7 +21,7 @@ public:
     static void ClearKey(const SDL_Scancode& scancode);
     
 private:
-    static std::unordered_map<SDL_Scancode, std::vector<std::function<void(const bool&)>>> m_keyBinds;
-    static std::unordered_map<SDL_Scancode, bool> m_keyStates;
+    inline static std::unordered_map<SDL_Scancode, std::vector<std::function<void(const bool&)>>> m_keyBinds {};
+    inline static std::unordered_map<SDL_Scancode, bool> m_keyStates {};
     
 };

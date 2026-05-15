@@ -5,8 +5,6 @@
 #include <ImGui/imgui_impl_dx12.h>
 #include <HexEngine/Renderer/RendererSetup.hpp>
 
-ImGuiHeapAllocator ImGuiTool::s_descriptorHeapAllocator = {};
-
 void ImGuiTool::Initialize(const SDLWindow& window, const Device& device, const CommandQueue& commandQueue, const DescriptorHeap& srvDescriptorHeap, DXGI_FORMAT backBufferFormat, std::uint64_t maxFrameIndex)
 {
     IMGUI_CHECKVERSION();

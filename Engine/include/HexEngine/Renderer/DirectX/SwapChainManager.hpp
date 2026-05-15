@@ -24,7 +24,7 @@ public:
     BackBuffer GetBackBufferAt(std::uint8_t index) const;
     
     [[maybe_unused]] [[nodiscard]]
-    BackBuffer GetCurrentBackBuffer() const;
+    BackBuffer& GetCurrentBackBuffer();
     
     [[maybe_unused]] [[nodiscard]]
     std::vector<BackBuffer> GetBackBuffers() const;
@@ -36,11 +36,11 @@ public:
     std::uint32_t GetRenderTargetDescriptorSize() const;
     
 private:
-    SwapChain m_swapChain;
-    DescriptorHeap m_descriptorHeap;
-    std::uint32_t m_renderTargetDescriptorSize = 0;
-    std::vector<BackBuffer> m_backBuffers;
-    std::uint32_t m_currentBackBufferIndex = 0;
+    SwapChain m_swapChain {};
+    DescriptorHeap m_descriptorHeap {};
+    std::uint32_t m_renderTargetDescriptorSize {0};
+    std::vector<BackBuffer> m_backBuffers {};
+    std::uint32_t m_currentBackBufferIndex {0};
     
 };
 
@@ -59,7 +59,7 @@ inline BackBuffer SwapChainManager::GetBackBufferAt(std::uint8_t index) const
     return m_backBuffers.at(index);
 }
 
-inline BackBuffer SwapChainManager::GetCurrentBackBuffer() const
+inline BackBuffer& SwapChainManager::GetCurrentBackBuffer()
 {
     return m_backBuffers.at(m_currentBackBufferIndex);
 }
