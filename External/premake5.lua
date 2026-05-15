@@ -191,7 +191,7 @@ project "ImGui"
 
     prebuildcommands{
         "{MKDIR} " .. mkdirPath,
-        "{COPY} " .. rootPath .. "/External/ImGui/*.h " .. copyPath,
-        "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_dx12.h " .. copyPath,
-        "{COPY} " .. rootPath .. "/External/ImGui/backends/imgui_impl_SDL3.h " .. copyPath
+        "{COPY} " .. "\"" .. rootPath .. "/External/ImGui/*.h\" " .. copyPath,
+        "{COPY} " .. "\"" .. rootPath .. "/External/ImGui/backends/imgui_impl_dx12.h\" " .. copyPath,
+        "{COPY} " .. "\"" .. rootPath .. "/External/ImGui/backends/imgui_impl_SDL3.h\" " .. copyPath
     }
