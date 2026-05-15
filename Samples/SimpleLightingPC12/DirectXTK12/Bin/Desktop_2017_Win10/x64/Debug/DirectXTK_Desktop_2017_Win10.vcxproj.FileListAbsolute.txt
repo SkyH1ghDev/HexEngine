@@ -1,3 +1,0 @@
-C:\Users\edvin\Desktop\Xbox-ATG-Samples-main\Kits\DirectXTK12\Bin\Desktop_2017_Win10\x64\Debug\DirectXTK12.lib
-C:\Users\edvin\Desktop\Xbox-ATG-Samples-main\PCSamples\IntroGraphics\DirectXTK12\Bin\Desktop_2017_Win10\x64\Debug\DirectXTK12.lib
-C:\Users\edvin\Desktop\Xbox-ATG-Samples-main\PCSamples\IntroGraphics\SimpleLightingPC12\DirectXTK12\Bin\Desktop_2017_Win10\x64\Debug\DirectXTK12.lib
