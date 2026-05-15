@@ -97,13 +97,21 @@ void Renderer::Render()
 
     // Clear Render Target
     {
-        const CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBufferRenderTarget.GetRaw(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        const CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            backBufferRenderTarget.GetRaw(), 
+            D3D12_RESOURCE_STATE_PRESENT, 
+            D3D12_RESOURCE_STATE_RENDER_TARGET
+        );
     
         m_commandList->ResourceBarrier(1, &barrier);
     
         constexpr std::array<float, 4> clearColour = { 0.6f, 0.9f, 0.5f, 1.0f };
 
-        const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv = CD3DX12_CPU_DESCRIPTOR_HANDLE(backBufferDescriptorHeap.GetCOM()->GetCPUDescriptorHandleForHeapStart(), m_swapChainManager.GetCurrentBackBufferIndex(), m_swapChainManager.GetRenderTargetDescriptorSize());
+        const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv = CD3DX12_CPU_DESCRIPTOR_HANDLE(
+            backBufferDescriptorHeap.GetCOM()->GetCPUDescriptorHandleForHeapStart(), 
+            m_swapChainManager.GetCurrentBackBufferIndex(), 
+            m_swapChainManager.GetRenderTargetDescriptorSize()
+        );
 
         m_commandList->ClearRenderTargetView(rtv, clearColour.data(), 0, nullptr);
         m_commandList->OMSetRenderTargets(1, &rtv, false, nullptr);
@@ -123,7 +131,11 @@ void Renderer::Render()
 
     // Present
     {
-        CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBufferRenderTarget.GetRaw(),D3D12_RESOURCE_STATE_RENDER_TARGET,  D3D12_RESOURCE_STATE_PRESENT);
+        CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            backBufferRenderTarget.GetRaw(),
+            D3D12_RESOURCE_STATE_RENDER_TARGET,  
+            D3D12_RESOURCE_STATE_PRESENT
+        );
 
         m_commandList->ResourceBarrier(1, &barrier);
 
