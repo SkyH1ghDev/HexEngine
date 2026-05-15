@@ -26,9 +26,9 @@ public:
     void SetFenceValue(std::uint64_t fenceValue);
 
 private:
-    Resource m_renderTarget;
-    CommandAllocator m_commandAllocator;
-    std::uint64_t m_fenceValue = 0;
+    Resource m_renderTarget {};
+    CommandAllocator m_commandAllocator {};
+    std::uint64_t m_fenceValue {0};
     
 };
 

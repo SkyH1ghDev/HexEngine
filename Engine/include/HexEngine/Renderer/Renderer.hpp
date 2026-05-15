@@ -24,8 +24,8 @@ public:
     void Cleanup() const;
 
 private:
-    std::uint8_t m_numFrames = 3;
-    bool m_vSync = false;
+    std::uint8_t m_numFrames {3};
+    bool m_vSync {false};
 
     // ImGui
     #if defined(_DEBUG)
@@ -33,11 +33,11 @@ private:
         DescriptorHeap m_imGuiDescriptorHeap;
     #endif
     
-    Device m_device;
-    CommandQueue m_commandQueue;
-    SwapChainManager m_swapChainManager;
-    CommandList m_commandList;
-    Fence m_fence;
+    Device m_device {};
+    CommandQueue m_commandQueue {};
+    SwapChainManager m_swapChainManager {};
+    CommandList m_commandList {};
+    Fence m_fence {};
 
     //winrt::com_ptr<ID3D12Device2> m_device;
     //MW::ComPtr<ID3D12CommandQueue> m_commandQueue;

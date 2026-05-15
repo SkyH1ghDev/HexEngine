@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include <print>
 
 #if defined(_DEBUG)
     #include <HexEngine/Renderer/ImGui/ImGuiTool.hpp>
@@ -62,15 +63,16 @@ void Renderer::Draw()
 
     m_swapChainManager.PresentFrame(m_vSync);
 
-    BackBuffer backBuffer = m_swapChainManager.GetCurrentBackBuffer();
+    BackBuffer& backBuffer = m_swapChainManager.GetCurrentBackBuffer();
 
     std::uint64_t fenceValue = backBuffer.GetFenceValue();
     fenceValue = m_commandQueue.Signal(m_fence, fenceValue);
     backBuffer.SetFenceValue(fenceValue);
-
+    
+    backBuffer = m_swapChainManager.GetCurrentBackBuffer();
+    
     m_swapChainManager.UpdateBackBufferIndex();
 
-    backBuffer = m_swapChainManager.GetCurrentBackBuffer();
     m_fence.WaitForValue(backBuffer.GetFenceValue());   
 }
 
@@ -81,9 +83,19 @@ void Renderer::Render()
     const DescriptorHeap backBufferDescriptorHeap = m_swapChainManager.GetDescriptorHeap();
     const CommandAllocator backBufferCommandAllocator = backBuffer.GetCommandAllocator();
     const Resource backBufferRenderTarget = backBuffer.GetRenderTarget();
-
-    static_cast<void>(backBufferCommandAllocator->Reset());
-    static_cast<void>(m_commandList->Reset(backBufferCommandAllocator.GetRaw(), nullptr));
+    
+    HRESULT res = backBufferCommandAllocator->Reset();
+    if (FAILED(res))
+    {
+        std::print("Failed to reset backBufferCommandAllocator");
+    }
+    
+    res = m_commandList->Reset(backBufferCommandAllocator.GetRaw(), nullptr);
+    if (FAILED(res))
+    {
+        std::print("Failed to reset commandList");
+    }
+    
 
     // Clear Render Target
     {
