@@ -7,4 +7,5 @@ Generated/
 
 # FILES
 *.sln
+*.DotSettings.user
 premake5.exe
