@@ -69,8 +69,6 @@ void Renderer::Draw()
     fenceValue = m_commandQueue.Signal(m_fence, fenceValue);
     backBuffer.SetFenceValue(fenceValue);
     
-    backBuffer = m_swapChainManager.GetCurrentBackBuffer();
-    
     m_swapChainManager.UpdateBackBufferIndex();
 
     m_fence.WaitForValue(backBuffer.GetFenceValue());   
@@ -79,7 +77,7 @@ void Renderer::Draw()
 
 void Renderer::Render()
 {
-    const BackBuffer backBuffer = m_swapChainManager.GetCurrentBackBuffer();
+    const BackBuffer& backBuffer = m_swapChainManager.GetCurrentBackBuffer();
     const DescriptorHeap backBufferDescriptorHeap = m_swapChainManager.GetDescriptorHeap();
     const CommandAllocator backBufferCommandAllocator = backBuffer.GetCommandAllocator();
     const Resource backBufferRenderTarget = backBuffer.GetRenderTarget();
