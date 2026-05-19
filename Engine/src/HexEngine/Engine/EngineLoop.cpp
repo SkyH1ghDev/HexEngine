@@ -11,11 +11,11 @@ void EngineLoop::Run(Renderer& renderer)
     
     while (m_isRunning)
     {
+        SDLEventHandler::HandleEvents();
         Input::Update();
         
         renderer.Draw();
         
-        SDLEventHandler::HandleEvents();
         Clock::Update();
     }
 

@@ -4,8 +4,8 @@ SDLWindow EngineSetup::InitializeWindow()
 {
     SDLWindow window(SDL_CreateWindow(
         "HexEngine",
-        800,
-        600,
+        1280,
+        720,
         0
         ));
 

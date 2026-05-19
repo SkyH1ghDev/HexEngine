@@ -160,13 +160,11 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 	if (filePath.substr(filePath.find_last_of('.')) != ".obj")
 	{
 		throw std::runtime_error("Error: Unsupported file format: " + std::string(filePath));
-		return MeshData{};
 	}
 
 	if (!std::filesystem::exists(filePath))
 	{
 		throw std::runtime_error("Error: File does not exist: " + std::string(filePath));
-		return MeshData{};
 	}
 
 	auto mesh = std::make_unique<DX::WaveFrontReader<uint16_t>>();
@@ -175,7 +173,6 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 	if (FAILED(hr))
 	{
 		throw std::runtime_error("Failed to load " + std::string(filePath) + " (" + StringUtils::HResultToString(hr) + ")");
-		return MeshData{};
 	}
 
 	return GenMeshData(mesh.get());
