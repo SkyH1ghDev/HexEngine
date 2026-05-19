@@ -1,6 +1,7 @@
 #pragma once
+#include "MeshData.hpp"
 
-namespace MeshLoader
+namespace Assets::MeshLoader
 {
-	void LoadMesh(std::string_view filePath); // TODO: Give return type
-};
+	MeshData LoadMesh(std::string_view filePath);
+}
