@@ -14,8 +14,8 @@ void ImGuiTool::Initialize(const SDLWindow& window, const Device& device, const 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-    io.ConfigViewportsNoAutoMerge = true;
-	io.ConfigViewportsNoTaskBarIcon = true;
+    io.ConfigViewportsNoAutoMerge = false;
+	io.ConfigViewportsNoTaskBarIcon = false;
 
     ImGui::StyleColorsDark();
 
@@ -31,8 +31,15 @@ void ImGuiTool::Initialize(const SDLWindow& window, const Device& device, const 
     initInfo.RTVFormat = backBufferFormat;
     initInfo.DSVFormat = DXGI_FORMAT_UNKNOWN;
     initInfo.SrvDescriptorHeap = descriptorHeap.get();
-    initInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) { return s_descriptorHeapAllocator.Allocate(out_cpu_handle, out_gpu_handle); };
-    initInfo.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle)            { return s_descriptorHeapAllocator.Deallocate(cpu_handle, gpu_handle); };
+
+    initInfo.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) { 
+        return s_descriptorHeapAllocator.Allocate(out_cpu_handle, out_gpu_handle); 
+    };
+
+    initInfo.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) { 
+        return s_descriptorHeapAllocator.Deallocate(cpu_handle, gpu_handle); 
+    };
+
     ImGui_ImplDX12_Init(&initInfo);
 }
 
@@ -46,12 +53,11 @@ void ImGuiTool::Start()
 void ImGuiTool::Run()
 {
 	// Windows
-	ImGui::ShowDemoWindow();
+	//ImGui::ShowDemoWindow();
 
 	ImGui::Begin("Bingus");
 	ImGui::Text("Hello World");
-	ImGui::End();
-	
+	ImGui::End();	
 	
 	ImGui::Render();
 }
