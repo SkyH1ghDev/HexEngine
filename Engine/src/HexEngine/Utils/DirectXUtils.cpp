@@ -1,9 +1,9 @@
 #include "DirectXUtils.hpp"
-#include <wrl/client.h>
+#include <winrt/base.h>
 #include <dxgi1_6.h>
 #include <format>
 
-namespace MW = Microsoft::WRL;
+using namespace winrt;
 
 DirectXUtils::DirectXException::DirectXException(HRESULT hr) :
     m_result(hr),
@@ -21,17 +21,23 @@ bool DirectXUtils::CheckTearingSupport()
 {
     bool allowTearing = false;
 
-    MW::ComPtr<IDXGIFactory4> factory4;
+    com_ptr<IDXGIFactory4> factory4;
     if (!SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
     {
         return false;
     }
     
-    MW::ComPtr<IDXGIFactory5> factory5;
-    if (!SUCCEEDED(factory4.As(&factory5)))
+    com_ptr<IDXGIFactory5> factory5 = nullptr;
+    try
     {
-        return false;
+        factory5 = factory4.as<IDXGIFactory5>();
     }
+    catch ([[maybe_unused]] winrt::hresult_error const& ex)
+    {
+		//winrt::hresult hr = ex.code();
+		//winrt::hstring message = ex.message();
+		return false;
+	}
     
     if
     (
@@ -50,4 +56,14 @@ bool DirectXUtils::CheckTearingSupport()
     }
 
     return allowTearing;
+}
+
+bool DirectXUtils::CheckMeshShaderSupport(com_ptr<ID3D12Device9> &device)
+{
+    D3D12_FEATURE_DATA_D3D12_OPTIONS7 features = {};
+
+    if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &features, sizeof(features))))
+        return false;
+
+    return features.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED;
 }

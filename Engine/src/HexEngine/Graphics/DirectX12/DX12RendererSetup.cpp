@@ -74,6 +74,12 @@ Device DX12RendererSetup::CreateDevice()
     DXUtils::ThrowIfFailed(D3D12CreateDevice(dxgiAdapter1.get(), D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&device)));
 
     #ifdef _DEBUG
+
+	// Ensure mesh shading is supported
+    if (!DXUtils::CheckMeshShaderSupport(device))
+    {
+		throw std::runtime_error("Mesh Shader support is required but not available on this device.");
+	}
         
     winrt::com_ptr<ID3D12InfoQueue> pInfoQueue;
     device.as(pInfoQueue);

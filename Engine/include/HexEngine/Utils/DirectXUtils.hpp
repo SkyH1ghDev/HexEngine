@@ -21,6 +21,8 @@ namespace DirectXUtils
 
     // Utility Functions
     bool CheckTearingSupport();
+
+    bool CheckMeshShaderSupport(winrt::com_ptr<ID3D12Device9> &device);
     
     inline void ThrowIfFailed(HRESULT hr)
     {
