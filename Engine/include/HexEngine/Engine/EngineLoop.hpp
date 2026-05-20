@@ -1,19 +1,22 @@
 #pragma once
-#include <HexEngine/Renderer/Renderer.hpp>
+#include <HexEngine/Graphics/DirectX12/DX12Renderer.hpp>
 
-class EngineLoop
+namespace HexEngine::Engine
 {
-public:
-    EngineLoop() = default;
-    ~EngineLoop() = default;
-    EngineLoop(const EngineLoop& other) = default;
-    EngineLoop& operator=(const EngineLoop& other) = default;
-    EngineLoop(EngineLoop&& other) noexcept = default;
-    EngineLoop& operator=(EngineLoop&& other) noexcept = default;
+    class EngineLoop
+    {
+    public:
+        EngineLoop() = default;
+        ~EngineLoop() = default;
+        EngineLoop(const EngineLoop& other) = default;
+        EngineLoop& operator=(const EngineLoop& other) = default;
+        EngineLoop(EngineLoop&& other) noexcept = default;
+        EngineLoop& operator=(EngineLoop&& other) noexcept = default;
 
-    static void Run(Renderer& renderer);
-    static void Stop();
+        static void Run(HexEngine::Graphics::DirectX12::DX12Renderer& renderer);
+        static void Stop();
     
-private:
-    static bool m_isRunning;
-};
+    private:
+        inline static bool s_isRunning = true;
+    };
+}

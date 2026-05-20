@@ -2,20 +2,22 @@
 #include "EngineSetup.hpp"
 #include "EngineCore.hpp"
 
-#include <HexEngine/Renderer/Renderer.hpp>
-#include <HexEngine/Input/Input.hpp>
+#include <HexEngine/Graphics/DirectX12/DX12Renderer.hpp>
+#include <HexEngine/Input/InputHandler.hpp>
 #include <SDL3/SDL_init.h>
 
-bool EngineCore::m_shouldRun = true;
+#undef CreateWindow
+
+using namespace HexEngine::Engine;
 
 void EngineCore::Run()
 {
     {
-        Input::Initialize();
-        Input::BindKey(SDL_SCANCODE_ESCAPE, PostQuitEvent_Callback);
+        HexEngine::Input::InputHandler::Initialize();
+        HexEngine::Input::InputHandler::BindKey(SDL_SCANCODE_ESCAPE, PostQuitEvent_Callback);
         
-        SDLWindow window(EngineSetup::InitializeWindow());
-        Renderer renderer = Renderer(window);
+        HexEngine::SDL::SDLWindow window {EngineSetup::CreateWindow()};
+        HexEngine::Graphics::DirectX12::DX12Renderer renderer {window};
 
         EngineLoop::Run(renderer);
     }

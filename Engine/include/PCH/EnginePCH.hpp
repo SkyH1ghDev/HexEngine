@@ -7,6 +7,7 @@
 // ---------------------- //
 
 #include <iostream>
+#include <print>
 #include <vector>
 #include <array>
 #include <string>
@@ -47,19 +48,20 @@
 //                        //
 // ---------------------- //
 
-#include <HexEngine/Renderer/DirectX/BackBuffer.hpp>
-#include <HexEngine/Renderer/DirectX/CommandAllocator.hpp>
-#include <HexEngine/Renderer/DirectX/CommandList.hpp>
-#include <HexEngine/Renderer/DirectX/CommandQueue.hpp>
-#include <HexEngine/Renderer/DirectX/DebugLayer.hpp>
-#include <HexEngine/Renderer/DirectX/DescriptorHeap.hpp>
-#include <HexEngine/Renderer/DirectX/Device.hpp>
-#include <HexEngine/Renderer/DirectX/DirectXUtils.hpp>
-#include <HexEngine/Renderer/DirectX/Fence.hpp>
-#include <HexEngine/Renderer/DirectX/IndexBuffer.hpp>
-#include <HexEngine/Renderer/DirectX/Resource.hpp>
-#include <HexEngine/Renderer/DirectX/SwapChain.hpp>
-#include <HexEngine/Renderer/DirectX/SwapChainManager.hpp>
-#include <HexEngine/Renderer/DirectX/VertexBuffer.hpp>
-#include <HexEngine/Renderer/ImGui/ImGuiHeapAllocator.hpp>
-#include <HexEngine/Clock/Clock.hpp>
+#include <HexEngine/Graphics/DirectX12/BackBuffer.hpp>
+#include <HexEngine/Graphics/DirectX12/CommandAllocator.hpp>
+#include <HexEngine/Graphics/DirectX12/CommandList.hpp>
+#include <HexEngine/Graphics/DirectX12/CommandQueue.hpp>
+#include <HexEngine/Graphics/DirectX12/DebugLayer.hpp>
+#include <HexEngine/Graphics/DirectX12/DescriptorHeap.hpp>
+#include <HexEngine/Graphics/DirectX12/Device.hpp>
+#include <HexEngine/Graphics/DirectX12/Fence.hpp>
+#include <HexEngine/Graphics/DirectX12/IndexBuffer.hpp>
+#include <HexEngine/Graphics/DirectX12/Resource.hpp>
+#include <HexEngine/Graphics/DirectX12/SwapChain.hpp>
+#include <HexEngine/Graphics/DirectX12/SwapChainManager.hpp>
+#include <HexEngine/Graphics/DirectX12/VertexBuffer.hpp>
+#include <HexEngine/Graphics/UI/ImGuiHeapAllocator.hpp>
+#include <HexEngine/Utils/DirectXUtils.hpp>
+#include <HexEngine/Utils/StringUtils.hpp>
+#include <HexEngine/Time/Clock.hpp>

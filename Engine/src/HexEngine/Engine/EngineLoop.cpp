@@ -1,28 +1,26 @@
 #include "EngineLoop.hpp"
 
-#include <HexEngine/Input/Input.hpp>
-#include <HexEngine/Clock/Clock.hpp>
+#include <HexEngine/Input/InputHandler.hpp>
+#include <HexEngine/Time/Clock.hpp>
 #include <HexEngine/SDL/SDLEventHandler.hpp>
 
-bool EngineLoop::m_isRunning = true;
+using namespace HexEngine::Engine;
 
-void EngineLoop::Run(Renderer& renderer)
+void EngineLoop::Run(HexEngine::Graphics::DirectX12::DX12Renderer& renderer)
 {
     
-    while (m_isRunning)
+    while (s_isRunning)
     {
-        SDLEventHandler::HandleEvents();
-        Input::Update();
+        HexEngine::SDL::SDLEventHandler::HandleEvents();
+        HexEngine::Input::InputHandler::Update();
         
         renderer.Draw();
-        
-        Clock::Update();
-    }
 
-    renderer.Cleanup();
+        Time::Clock::Update();
+    }
 }
 
 void EngineLoop::Stop()
 {
-    m_isRunning = false;
+    s_isRunning = false;
 }

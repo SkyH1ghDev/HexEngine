@@ -1,26 +1,29 @@
 #pragma once
 #include <SDL3/SDL_video.h>
+#include <memory>
 
-class SDLWindow
+namespace HexEngine::SDL
 {
-public:
-    SDLWindow() = default;
-    SDLWindow(SDL_Window* window);
-    ~SDLWindow();
-    SDLWindow(const SDLWindow& other) = default;
-    SDLWindow& operator=(const SDLWindow& other) = default;
-    SDLWindow(SDLWindow&& other) noexcept = default;
-    SDLWindow& operator=(SDLWindow&& other) noexcept = default;
+    class SDLWindow
+    {
+    public:
+        SDLWindow() = default;
+        SDLWindow(SDL_Window* window);
+        ~SDLWindow() = default;
+        SDLWindow(const SDLWindow& other) = delete;
+        SDLWindow& operator=(const SDLWindow& other) = delete;
+        SDLWindow(SDLWindow&& other) noexcept = default;
+        SDLWindow& operator=(SDLWindow&& other) noexcept = default;
 
-    SDL_Window* GetSDLWindow() const;
+        std::weak_ptr<SDL_Window> GetSDLWindow() const;
     
-private:
-    // TODO: MAKE SMART POINTER OF THIS
-    SDL_Window* m_window = nullptr;
+    private:
+        std::shared_ptr<SDL_Window> m_window {nullptr, SDL_DestroyWindow};
+    };
     
-};
-
-inline SDL_Window* SDLWindow::GetSDLWindow() const
-{
-    return m_window;
+    inline std::weak_ptr<SDL_Window> SDLWindow::GetSDLWindow() const
+    {
+        return m_window;
+    }
 }
+
