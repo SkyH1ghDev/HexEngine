@@ -25,19 +25,21 @@ namespace HexEngine::Graphics::DirectX12
 
     private:
         std::uint8_t mNumFrames {3};
-        bool m_vSync {false};
+        bool mVSync {false};
 
         // ImGui
 #if defined(_DEBUG)
-        DebugLayer m_debugInterface;
-        DescriptorHeap m_imGuiDescriptorHeap;
+        DebugLayer mDebugInterface;
+        DescriptorHeap mImGuiDescriptorHeap;
 #endif
     
         Device mDevice {};
-        CommandQueue mCommandQueue {};
-        SwapChainManager m_swapChainManager {};
-        CommandList m_commandList {};
-        Fence m_fence {};
+        CommandQueue mDirectCommandQueue {};
+        CommandQueue mCopyCommandQueue {};
+        CommandQueue mComputeCommandQueue {};
+        CommandList mCommandList {};
+        SwapChainManager mSwapChainManager {};
+        Fence mFence {};
 
         //winrt::com_ptr<ID3D12Device2> m_device;
         //MW::ComPtr<ID3D12CommandQueue> m_commandQueue;

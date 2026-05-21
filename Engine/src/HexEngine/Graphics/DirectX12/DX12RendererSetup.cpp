@@ -269,7 +269,7 @@ CommandAllocator DX12RendererSetup::CreateCommandAllocator(const Device& device,
 CommandList DX12RendererSetup::CreateCommandList(const Device& device, const CommandAllocator& commandAllocator, D3D12_COMMAND_LIST_TYPE type)
 {
     winrt::com_ptr<ID3D12GraphicsCommandList6> commandList;
-    DXUtils::ThrowIfFailed(device.GetCOM()->CreateCommandList(0, type, commandAllocator.GetRaw(), nullptr, IID_PPV_ARGS(&commandList)));
+    DXUtils::ThrowIfFailed(device->CreateCommandList(0, type, commandAllocator.GetRaw(), nullptr, IID_PPV_ARGS(&commandList)));
 
     DXUtils::ThrowIfFailed(commandList->Close());
 

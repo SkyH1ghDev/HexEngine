@@ -13,7 +13,7 @@ using namespace HexEngine::Graphics::DirectX12;
 DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
 {
     #if defined(_DEBUG)
-    m_debugInterface = DX12RendererSetup::CreateDebugLayer();
+    mDebugInterface = DX12RendererSetup::CreateDebugLayer();
     #endif
 
     // Standard DirectX12 Initialization
@@ -24,18 +24,21 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
         throw std::runtime_error("Mesh Shader support is required but not available on this device.");
     }
     
-    mCommandQueue = DX12RendererSetup::CreateCommandQueue(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
-    m_swapChainManager = DX12RendererSetup::CreateSwapChainManager(window, mDevice, mCommandQueue, mNumFrames);
+    mDirectCommandQueue = DX12RendererSetup::CreateCommandQueue(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    mCopyCommandQueue = DX12RendererSetup::CreateCommandQueue(mDevice, D3D12_COMMAND_LIST_TYPE_COPY);
+    mComputeCommandQueue = DX12RendererSetup::CreateCommandQueue(mDevice, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+    
+    mSwapChainManager = DX12RendererSetup::CreateSwapChainManager(window, mDevice, mDirectCommandQueue, mNumFrames);
 
-    BackBuffer backBuffer = m_swapChainManager.GetBackBufferAt(0);
+    BackBuffer backBuffer = mSwapChainManager.GetBackBufferAt(0);
     CommandAllocator commandAllocator = backBuffer.GetCommandAllocator();
     
-    m_commandList = DX12RendererSetup::CreateCommandList(mDevice, commandAllocator, D3D12_COMMAND_LIST_TYPE_DIRECT);
-    m_fence = DX12RendererSetup::CreateFence(mDevice);
+    mCommandList = DX12RendererSetup::CreateCommandList(mDevice, commandAllocator, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    mFence = DX12RendererSetup::CreateFence(mDevice);
 
     #if defined(_DEBUG)
-    m_imGuiDescriptorHeap = DX12RendererSetup::CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, mNumFrames);
-    HexEngine::Graphics::UI::ImGuiTool::Initialize(window, mDevice, mCommandQueue, m_imGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
+    mImGuiDescriptorHeap = DX12RendererSetup::CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, mNumFrames);
+    HexEngine::Graphics::UI::ImGuiTool::Initialize(window, mDevice, mDirectCommandQueue, mImGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
     #endif
 }
 
@@ -45,11 +48,11 @@ DX12Renderer::~DX12Renderer()
     HexEngine::Graphics::UI::ImGuiTool::Shutdown();
     #endif
     
-    std::vector<BackBuffer> backBuffers = m_swapChainManager.GetBackBuffers();
+    std::vector<BackBuffer> backBuffers = mSwapChainManager.GetBackBuffers();
 
     for (BackBuffer backBuffer : backBuffers)
     {
-        m_fence.Flush(backBuffer.GetFenceValue());
+        mFence.Flush(backBuffer.GetFenceValue());
     }
 }
 
@@ -66,24 +69,42 @@ void DX12Renderer::Draw()
     HexEngine::Graphics::UI::ImGuiTool::End();
     #endif
 
-    m_swapChainManager.PresentFrame(m_vSync);
+    mSwapChainManager.PresentFrame(mVSync);
 
-    BackBuffer& backBuffer = m_swapChainManager.GetCurrentBackBuffer();
+    BackBuffer& backBuffer = mSwapChainManager.GetCurrentBackBuffer();
 
     std::uint64_t fenceValue = backBuffer.GetFenceValue();
-    fenceValue = mCommandQueue.GPUSignal(m_fence, fenceValue);
+    fenceValue = mDirectCommandQueue.GPUSignal(mFence, fenceValue);
     backBuffer.SetFenceValue(fenceValue);
     
-    m_swapChainManager.UpdateBackBufferIndex();
+    mSwapChainManager.UpdateBackBufferIndex();
 
-    m_fence.WaitForValue(backBuffer.GetFenceValue());   
+    mFence.WaitForValue(backBuffer.GetFenceValue());   
 }
-
 
 void DX12Renderer::Render()
 {
-    BackBuffer& backBuffer = m_swapChainManager.GetCurrentBackBuffer();
-    DescriptorHeap& backBufferDescriptorHeap = m_swapChainManager.GetDescriptorHeap();
+    
+    
+    // CREATE VERTEX BUFFER
+    CD3DX12_HEAP_PROPERTIES vertexBufferHeapProps
+    {
+        .type = D3D12_HEAP_TYPE_DEFAULT
+    };
+    
+    CD3DX12_RESOURCE_DESC::Buffer() 
+        
+    static_cast<void>(
+        mDevice->CreateCommittedResource(
+            vertexBufferHeapProps, D3D12_HEAP_FLAG_NONE,
+            
+        )
+    );
+    winrt::com_ptr<ID3D12Resource> vertexBuffer = mCommandList->CopyVertexBuffer();
+    
+    
+    BackBuffer& backBuffer = mSwapChainManager.GetCurrentBackBuffer();
+    DescriptorHeap& backBufferDescriptorHeap = mSwapChainManager.GetDescriptorHeap();
     CommandAllocator& backBufferCommandAllocator = backBuffer.GetCommandAllocator();
     Resource& backBufferRenderTarget = backBuffer.GetRenderTarget();
     
@@ -93,7 +114,7 @@ void DX12Renderer::Render()
         std::print("Failed to reset backBufferCommandAllocator");
     }
     
-    res = m_commandList->Reset(backBufferCommandAllocator.GetRaw(), nullptr);
+    res = mCommandList->Reset(backBufferCommandAllocator.GetRaw(), nullptr);
     if (FAILED(res))
     {
         std::print("Failed to reset commandList");
@@ -108,29 +129,29 @@ void DX12Renderer::Render()
             D3D12_RESOURCE_STATE_RENDER_TARGET
         );
     
-        m_commandList->ResourceBarrier(1, &barrier);
+        mCommandList->ResourceBarrier(1, &barrier);
     
         constexpr std::array<float, 4> clearColour = { 0.6f, 0.9f, 0.5f, 1.0f };
 
         const CD3DX12_CPU_DESCRIPTOR_HANDLE rtv = CD3DX12_CPU_DESCRIPTOR_HANDLE(
             backBufferDescriptorHeap.GetCOM()->GetCPUDescriptorHandleForHeapStart(), 
-            m_swapChainManager.GetCurrentBackBufferIndex(), 
-            m_swapChainManager.GetRenderTargetDescriptorSize()
+            mSwapChainManager.GetCurrentBackBufferIndex(), 
+            mSwapChainManager.GetRenderTargetDescriptorSize()
         );
 
-        m_commandList->ClearRenderTargetView(rtv, clearColour.data(), 0, nullptr);
-        m_commandList->OMSetRenderTargets(1, &rtv, false, nullptr);
+        mCommandList->ClearRenderTargetView(rtv, clearColour.data(), 0, nullptr);
+        mCommandList->OMSetRenderTargets(1, &rtv, false, nullptr);
 
         std::vector<ID3D12DescriptorHeap*> descriptorHeaps =
         {
             #if defined(_DEBUG)
-            m_imGuiDescriptorHeap.GetRaw()
+            mImGuiDescriptorHeap.GetRaw()
             #endif
         };
         
-        m_commandList->SetDescriptorHeaps(static_cast<std::uint32_t>(descriptorHeaps.size()), descriptorHeaps.data());
+        mCommandList->SetDescriptorHeaps(static_cast<std::uint32_t>(descriptorHeaps.size()), descriptorHeaps.data());
         #if defined(_DEBUG)
-        HexEngine::Graphics::UI::ImGuiTool::RenderDrawData(m_commandList);
+        HexEngine::Graphics::UI::ImGuiTool::RenderDrawData(mCommandList);
         #endif
     }
 
@@ -142,11 +163,12 @@ void DX12Renderer::Render()
             D3D12_RESOURCE_STATE_PRESENT
         );
 
-        m_commandList->ResourceBarrier(1, &barrier);
+        mCommandList->ResourceBarrier(1, &barrier);
 
-        DirectXUtils::ThrowIfFailed(m_commandList->Close());
+        DirectXUtils::ThrowIfFailed(mCommandList->Close());
 
-        mCommandQueue.AppendCommandList(m_commandList);
-        mCommandQueue.ExecuteCommandLists();
+        // TODO: EXECUTE COMMAND LISTS :)
+        
+        //mCommandQueue.ExecuteCommandLists({mCommandList});
     }
 }

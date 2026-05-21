@@ -20,8 +20,7 @@ namespace HexEngine::Graphics::DirectX12
         [[maybe_unused]] [[nodiscard]]
         winrt::com_ptr<ID3D12CommandQueue> GetCOM() const;
     
-        void AppendCommandList(const CommandList& commandList);
-        void ExecuteCommandLists();
+        void ExecuteCommandLists(std::vector<CommandList>& pCommandList) const;
 
         // GPU Sync
         [[nodiscard]]
@@ -29,18 +28,11 @@ namespace HexEngine::Graphics::DirectX12
         void GPUWaitForValue(const Fence& fence, std::uint64_t fenceValue) const;
 
     private:
-        winrt::com_ptr<ID3D12CommandQueue> m_commandQueue = nullptr;
-        std::vector<CommandList> m_commandLists = { };
-    
+        winrt::com_ptr<ID3D12CommandQueue> mCommandQueue = nullptr;
     };
 
     inline winrt::com_ptr<ID3D12CommandQueue> CommandQueue::GetCOM() const
     {
-        return m_commandQueue;
-    }
-
-    inline void CommandQueue::AppendCommandList(const CommandList& commandList)
-    {
-        m_commandLists.push_back(commandList);
+        return mCommandQueue;
     }
 }

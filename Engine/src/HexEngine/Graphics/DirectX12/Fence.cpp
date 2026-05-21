@@ -7,22 +7,22 @@ using namespace HexEngine::Graphics::DirectX12;
 
 Fence::Fence(const winrt::com_ptr<ID3D12Fence1>& fence, const HANDLE& fenceEvent)
 {
-    this->m_fence = fence;
-    this->m_fenceEvent = fenceEvent;
+    this->mFence = fence;
+    this->mFenceEventHandle = fenceEvent;
 }
 
 std::uint64_t Fence::Signal(std::uint64_t fenceValue) const
 {
-    DXUtils::ThrowIfFailed(m_fence->Signal(++fenceValue));
+    DXUtils::ThrowIfFailed(mFence->Signal(++fenceValue));
     return fenceValue;
 }
 
 void Fence::WaitForValue(std::uint64_t fenceValue, const std::chrono::milliseconds duration) const
 {
-    if (m_fence->GetCompletedValue() < fenceValue)
+    if (mFence->GetCompletedValue() < fenceValue)
     {
-        DXUtils::ThrowIfFailed(m_fence->SetEventOnCompletion(fenceValue, m_fenceEvent));
-        ::WaitForSingleObject(m_fenceEvent, static_cast<DWORD>(duration.count()));
+        DXUtils::ThrowIfFailed(mFence->SetEventOnCompletion(fenceValue, mFenceEventHandle));
+        ::WaitForSingleObject(mFenceEventHandle, static_cast<DWORD>(duration.count()));
     }
 }
 

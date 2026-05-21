@@ -4,31 +4,24 @@ using namespace HexEngine::Graphics::DirectX12;
 
 CommandQueue::CommandQueue(const winrt::com_ptr<ID3D12CommandQueue>& commandQueue)
 {
-    m_commandQueue = commandQueue;
+    mCommandQueue = commandQueue;
 }
 
-void CommandQueue::ExecuteCommandLists()
+void CommandQueue::ExecuteCommandLists(std::vector<CommandList>& pCommandList) const
 {
-    // Convert from vector of ComPtr to vector of raw pointers
-    std::vector<ID3D12CommandList*> commandLists = { };
-    commandLists.reserve(m_commandLists.size());
+    // TODO: FIX THIS :)
     
-    for (const auto& commandList : m_commandLists)
-    {
-        commandLists.push_back(commandList.GetRaw());
-    }
-    
-    m_commandQueue->ExecuteCommandLists(static_cast<std::uint32_t>(m_commandLists.size()), commandLists.data());
-    m_commandLists.clear();
+    //mCommandQueue->ExecuteCommandLists(static_cast<std::uint32_t>(pCommandList.size()), pCommandList.data());
+    //pCommandList.clear();
 }
 
 std::uint64_t CommandQueue::GPUSignal(const Fence& fence, std::uint64_t fenceValue) const
 {
-    m_commandQueue->Signal(fence.GetRaw(), ++fenceValue);
+    mCommandQueue->Signal(fence.GetRaw(), ++fenceValue);
     return fenceValue;
 }
 
 void CommandQueue::GPUWaitForValue(const Fence& fence, std::uint64_t fenceValue) const
 {
-    m_commandQueue->Wait(fence.GetRaw(), fenceValue);
+    mCommandQueue->Wait(fence.GetRaw(), fenceValue);
 }

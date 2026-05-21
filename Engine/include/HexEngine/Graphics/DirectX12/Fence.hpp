@@ -37,17 +37,17 @@ namespace HexEngine::Graphics::DirectX12
         void Flush(std::uint64_t fenceValue) const;
 
     private:
-        winrt::com_ptr<ID3D12Fence1> m_fence = nullptr;
-        HANDLE m_fenceEvent = nullptr;
+        winrt::com_ptr<ID3D12Fence1> mFence = nullptr;
+        HANDLE mFenceEventHandle = nullptr;
     };
 
     inline winrt::com_ptr<ID3D12Fence1> Fence::GetCOM() const
     {
-        return m_fence;
+        return mFence;
     }
 
     inline ID3D12Fence1* Fence::GetRaw() const
     {
-        return m_fence.get();
+        return mFence.get();
     }
 }
