@@ -6,7 +6,7 @@
 
 using namespace HexEngine::Engine;
 
-void EngineLoop::Run(HexEngine::Graphics::DirectX12::DX12Renderer& renderer)
+void EngineLoop::Run(HexEngine::Graphics::DirectX12::DX12Renderer& pRenderer)
 {
     
     while (s_isRunning)
@@ -14,7 +14,7 @@ void EngineLoop::Run(HexEngine::Graphics::DirectX12::DX12Renderer& renderer)
         HexEngine::SDL::SDLEventHandler::HandleEvents();
         HexEngine::Input::InputHandler::Update();
         
-        renderer.Draw();
+        pRenderer.Draw();
 
         Time::Clock::Update();
     }

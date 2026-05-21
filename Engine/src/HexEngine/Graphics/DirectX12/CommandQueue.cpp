@@ -22,13 +22,13 @@ void CommandQueue::ExecuteCommandLists()
     m_commandLists.clear();
 }
 
-std::uint64_t CommandQueue::Signal(const Fence& fence, std::uint64_t fenceValue) const
+std::uint64_t CommandQueue::GPUSignal(const Fence& fence, std::uint64_t fenceValue) const
 {
     m_commandQueue->Signal(fence.GetRaw(), ++fenceValue);
     return fenceValue;
 }
 
-void CommandQueue::WaitForValue(const Fence& fence, std::uint64_t fenceValue) const
+void CommandQueue::GPUWaitForValue(const Fence& fence, std::uint64_t fenceValue) const
 {
     m_commandQueue->Wait(fence.GetRaw(), fenceValue);
 }

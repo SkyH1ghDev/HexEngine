@@ -15,14 +15,11 @@ namespace DirectXUtils
         const char* what() const noexcept override;
 
     private:
-        HRESULT m_result;
-        std::string m_message;
+        HRESULT mResult;
+        std::string mMessage;
     };
 
     // Utility Functions
-    bool CheckTearingSupport();
-
-    bool CheckMeshShaderSupport(winrt::com_ptr<ID3D12Device9> &device);
     
     inline void ThrowIfFailed(HRESULT hr)
     {

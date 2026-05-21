@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <print>
+#include <format>
 #include <vector>
 #include <array>
 #include <string>
@@ -21,6 +22,13 @@
 //    LINKED LIBRARIES    //
 //                        //
 // ---------------------- //
+
+// Windows
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#undef max
+#undef min
+#undef CreateWindow
 
 // COM-Objects
 #include <winrt/base.h>
@@ -61,6 +69,9 @@
 #include <HexEngine/Graphics/DirectX12/SwapChain.hpp>
 #include <HexEngine/Graphics/DirectX12/SwapChainManager.hpp>
 #include <HexEngine/Graphics/DirectX12/VertexBuffer.hpp>
+#include <HexEngine/Graphics/DirectX12/DX12DeviceCapabilities.hpp>
+#include <HexEngine/Graphics/DirectX12/DX12Renderer.hpp>
+#include <HexEngine/Graphics/DirectX12/DX12RendererSetup.hpp>
 #include <HexEngine/Graphics/UI/ImGuiHeapAllocator.hpp>
 #include <HexEngine/Utils/DirectXUtils.hpp>
 #include <HexEngine/Utils/StringUtils.hpp>

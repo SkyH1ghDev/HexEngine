@@ -1,17 +1,21 @@
 ﻿#pragma once
 
-class DX12FeatureValidator
+namespace HexEngine::Graphics::DirectX12
 {
-public:
-    DX12FeatureValidator() = default;
-    ~DX12FeatureValidator() = default;
-    DX12FeatureValidator(const DX12FeatureValidator&) = delete;
-    DX12FeatureValidator& operator=(const DX12FeatureValidator&) = delete;
-    DX12FeatureValidator(DX12FeatureValidator&&) = delete;
-    DX12FeatureValidator& operator=(DX12FeatureValidator&&) = delete;
+    class DX12DeviceCapabilities
+    {
+    public:
+        DX12DeviceCapabilities() = default;
+        ~DX12DeviceCapabilities() = default;
+        DX12DeviceCapabilities(const DX12DeviceCapabilities&) = delete;
+        DX12DeviceCapabilities& operator=(const DX12DeviceCapabilities&) = delete;
+        DX12DeviceCapabilities(DX12DeviceCapabilities&&) = delete;
+        DX12DeviceCapabilities& operator=(DX12DeviceCapabilities&&) = delete;
     
-    bool CheckTearingSupport();
+        static bool CheckTearingSupport();
+        static bool CheckMeshShaderSupport(const Device& pDevice);
+        static bool CheckDirectXMathSupport();
     
-private:
-    
-};
+    private:
+    };
+}

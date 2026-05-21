@@ -13,7 +13,7 @@ namespace HexEngine::Engine
         EngineLoop(EngineLoop&& other) noexcept = default;
         EngineLoop& operator=(EngineLoop&& other) noexcept = default;
 
-        static void Run(HexEngine::Graphics::DirectX12::DX12Renderer& renderer);
+        static void Run(HexEngine::Graphics::DirectX12::DX12Renderer& pRenderer);
         static void Stop();
     
     private:

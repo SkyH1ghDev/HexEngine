@@ -2,14 +2,14 @@
 
 using namespace HexEngine::Engine;
 
-HexEngine::SDL::SDLWindow EngineSetup::CreateWindow()
+HexEngine::SDL::SDLWindow EngineSetup::CreateWindow(const std::uint32_t pWidth, const std::uint32_t pHeight)
 {
-    HexEngine::SDL::SDLWindow window(SDL_CreateWindow(
-        "HexEngine",
-        1280,
-        720,
-        0
-        ));
+    HexEngine::SDL::SDLWindow window
+    {
+        SDL_CreateWindow("HexEngine", static_cast<int>(pWidth), static_cast<int>(pHeight), 0),
+        pWidth,
+        pHeight
+    };
 
     return window;
 }

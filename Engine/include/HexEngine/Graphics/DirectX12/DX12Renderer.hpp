@@ -10,7 +10,6 @@
 #include <HexEngine/Assets/Mesh/MeshLoader.hpp>
 #include <HexEngine/Assets/Shader/ShaderLoader.hpp>
 
-namespace DX = DirectX;
 namespace HexEngine::Graphics::DirectX12
 {
     class DX12Renderer {
@@ -27,7 +26,7 @@ namespace HexEngine::Graphics::DirectX12
         void Draw();
 
     private:
-        std::uint8_t m_numFrames {3};
+        std::uint8_t mNumFrames {3};
         bool m_vSync {false};
 
         // ImGui
@@ -36,8 +35,8 @@ namespace HexEngine::Graphics::DirectX12
         DescriptorHeap m_imGuiDescriptorHeap;
 #endif
     
-        Device m_device {};
-        CommandQueue m_commandQueue {};
+        Device mDevice {};
+        CommandQueue mCommandQueue {};
         SwapChainManager m_swapChainManager {};
         CommandList m_commandList {};
         Fence m_fence {};

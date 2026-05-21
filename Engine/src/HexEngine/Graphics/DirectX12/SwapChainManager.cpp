@@ -16,7 +16,7 @@ SwapChainManager::SwapChainManager(const SwapChain& swapChain, const DescriptorH
 void SwapChainManager::PresentFrame(bool doVSync) const
 {
     const std::uint32_t syncInterval = doVSync ? 1 : 0;
-    const std::uint32_t presentFlags = DXUtils::CheckTearingSupport() && !doVSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+    const std::uint32_t presentFlags = DX12DeviceCapabilities::CheckTearingSupport() && !doVSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
         
     DXUtils::ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
 }
