@@ -5,7 +5,7 @@
 #include <HexEngine/Graphics/DirectX12/DX12RendererSetup.hpp>
 
 #if defined(_DEBUG)
-    #include <HexEngine/Graphics/UI/ImGuiTool.hpp>
+#include <HexEngine/Graphics/UI/ImGuiTool.hpp>
 #endif
 
 using namespace HexEngine::Graphics::DirectX12;
@@ -13,36 +13,36 @@ using namespace HexEngine::Graphics::DirectX12;
 DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
 {
     #if defined(_DEBUG)
-    {
-        m_debugInterface = DX12RendererSetup::CreateDebugLayer();
-    }
+    m_debugInterface = DX12RendererSetup::CreateDebugLayer();
     #endif
 
     // Standard DirectX12 Initialization
-    m_device = DX12RendererSetup::CreateDevice();
-    m_commandQueue = DX12RendererSetup::CreateCommandQueue(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-    m_swapChainManager = DX12RendererSetup::CreateSwapChainManager(window, m_device, m_commandQueue, m_numFrames);
+    mDevice = DX12RendererSetup::CreateDevice();
+    
+    if (!DX12DeviceCapabilities::CheckMeshShaderSupport(mDevice))
+    {
+        throw std::runtime_error("Mesh Shader support is required but not available on this device.");
+    }
+    
+    mCommandQueue = DX12RendererSetup::CreateCommandQueue(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    m_swapChainManager = DX12RendererSetup::CreateSwapChainManager(window, mDevice, mCommandQueue, mNumFrames);
 
     BackBuffer backBuffer = m_swapChainManager.GetBackBufferAt(0);
     CommandAllocator commandAllocator = backBuffer.GetCommandAllocator();
     
-    m_commandList = DX12RendererSetup::CreateCommandList(m_device, commandAllocator, D3D12_COMMAND_LIST_TYPE_DIRECT);
-    m_fence = DX12RendererSetup::CreateFence(m_device);
+    m_commandList = DX12RendererSetup::CreateCommandList(mDevice, commandAllocator, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    m_fence = DX12RendererSetup::CreateFence(mDevice);
 
     #if defined(_DEBUG)
-    {
-        m_imGuiDescriptorHeap = DX12RendererSetup::CreateDescriptorHeap(m_device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, m_numFrames);
-        HexEngine::Graphics::UI::ImGuiTool::Initialize(window, m_device, m_commandQueue, m_imGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
-    }
+    m_imGuiDescriptorHeap = DX12RendererSetup::CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, mNumFrames);
+    HexEngine::Graphics::UI::ImGuiTool::Initialize(window, mDevice, mCommandQueue, m_imGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
     #endif
 }
 
 DX12Renderer::~DX12Renderer()
 {
     #if defined(_DEBUG)
-    {
-        HexEngine::Graphics::UI::ImGuiTool::Shutdown();
-    }
+    HexEngine::Graphics::UI::ImGuiTool::Shutdown();
     #endif
     
     std::vector<BackBuffer> backBuffers = m_swapChainManager.GetBackBuffers();
@@ -56,18 +56,14 @@ DX12Renderer::~DX12Renderer()
 void DX12Renderer::Draw()
 {
     #if defined(_DEBUG)
-    {
-        HexEngine::Graphics::UI::ImGuiTool::Start();
-        HexEngine::Graphics::UI::ImGuiTool::Run();
-    }
+    HexEngine::Graphics::UI::ImGuiTool::Start();
+    HexEngine::Graphics::UI::ImGuiTool::Run();
     #endif
     
     Render();
 
     #if defined(_DEBUG)
-    {
-        HexEngine::Graphics::UI::ImGuiTool::End();
-    }
+    HexEngine::Graphics::UI::ImGuiTool::End();
     #endif
 
     m_swapChainManager.PresentFrame(m_vSync);
@@ -75,7 +71,7 @@ void DX12Renderer::Draw()
     BackBuffer& backBuffer = m_swapChainManager.GetCurrentBackBuffer();
 
     std::uint64_t fenceValue = backBuffer.GetFenceValue();
-    fenceValue = m_commandQueue.Signal(m_fence, fenceValue);
+    fenceValue = mCommandQueue.GPUSignal(m_fence, fenceValue);
     backBuffer.SetFenceValue(fenceValue);
     
     m_swapChainManager.UpdateBackBufferIndex();
@@ -150,7 +146,7 @@ void DX12Renderer::Render()
 
         DirectXUtils::ThrowIfFailed(m_commandList->Close());
 
-        m_commandQueue.AppendCommandList(m_commandList);
-        m_commandQueue.ExecuteCommandLists();
+        mCommandQueue.AppendCommandList(m_commandList);
+        mCommandQueue.ExecuteCommandLists();
     }
 }

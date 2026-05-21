@@ -2,7 +2,9 @@
 
 using namespace HexEngine::SDL;
 
-SDLWindow::SDLWindow(SDL_Window* window)
+SDLWindow::SDLWindow(SDL_Window* pWindow, const std::uint32_t pWidth, const std::uint32_t pHeight)
 {
-    m_window = std::shared_ptr<SDL_Window> {window, SDL_DestroyWindow};
+    mWindow = std::shared_ptr<SDL_Window> {pWindow, SDL_DestroyWindow};
+    mWidth = pWidth;
+    mHeight = pHeight;
 }

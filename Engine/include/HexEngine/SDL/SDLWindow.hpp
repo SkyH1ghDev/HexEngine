@@ -8,22 +8,36 @@ namespace HexEngine::SDL
     {
     public:
         SDLWindow() = default;
-        SDLWindow(SDL_Window* window);
+        explicit SDLWindow(SDL_Window* pWindow, const std::uint32_t pWidth = 1280, const std::uint32_t pHeight = 720);
         ~SDLWindow() = default;
-        SDLWindow(const SDLWindow& other) = delete;
-        SDLWindow& operator=(const SDLWindow& other) = delete;
-        SDLWindow(SDLWindow&& other) noexcept = default;
-        SDLWindow& operator=(SDLWindow&& other) noexcept = default;
+        SDLWindow(const SDLWindow& pOther) = delete;
+        SDLWindow& operator=(const SDLWindow& pOther) = delete;
+        SDLWindow(SDLWindow&& pOther) noexcept = default;
+        SDLWindow& operator=(SDLWindow&& pOther) noexcept = default;
 
         std::weak_ptr<SDL_Window> GetSDLWindow() const;
-    
+        std::uint32_t GetWidth() const;
+        std::uint32_t GetHeight() const;
+        
     private:
-        std::shared_ptr<SDL_Window> m_window {nullptr, SDL_DestroyWindow};
+        std::shared_ptr<SDL_Window> mWindow {nullptr, SDL_DestroyWindow};
+        std::uint32_t mWidth {1280};
+        std::uint32_t mHeight {720};
     };
     
     inline std::weak_ptr<SDL_Window> SDLWindow::GetSDLWindow() const
     {
-        return m_window;
+        return mWindow;
+    }
+    
+    inline std::uint32_t SDLWindow::GetWidth() const
+    {
+        return mWidth;
+    }
+    
+    inline std::uint32_t SDLWindow::GetHeight() const
+    {
+        return mHeight;
     }
 }
 

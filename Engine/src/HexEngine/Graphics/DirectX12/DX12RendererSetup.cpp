@@ -8,7 +8,7 @@
 namespace DXUtils = DirectXUtils;
 using namespace HexEngine::Graphics::DirectX12;
 
-#if defined(_DEBUG) 
+#ifdef _DEBUG 
 DebugLayer DX12RendererSetup::CreateDebugLayer()
 {
     // Enables Debug Layer
@@ -28,8 +28,8 @@ Device DX12RendererSetup::CreateDevice()
     winrt::com_ptr<IDXGIFactory7> dxgiFactory;
     UINT createFactoryFlags = 0;
     
-    #if defined(_DEBUG)
-        createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
+    #ifdef _DEBUG
+    createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
     #endif
     
     DXUtils::ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
@@ -38,9 +38,9 @@ Device DX12RendererSetup::CreateDevice()
 
     winrt::com_ptr<IDXGIAdapter1> dxgiAdapter1;
     winrt::com_ptr<IDXGIAdapter4> dxgiAdapter4;
-    SIZE_T maxDedicatedVideoMemory = 0;
+    std::size_t maxDedicatedVideoMemory = 0;
 
-    for (UINT i = 0; dxgiFactory->EnumAdapters1(i, dxgiAdapter1.put()) != DXGI_ERROR_NOT_FOUND; ++i)
+    for (std::uint32_t i = 0; dxgiFactory->EnumAdapters1(i, dxgiAdapter1.put()) != DXGI_ERROR_NOT_FOUND; ++i)
     {
         DXGI_ADAPTER_DESC1 desc;
         dxgiAdapter1->GetDesc1(&desc);
@@ -74,12 +74,6 @@ Device DX12RendererSetup::CreateDevice()
     DXUtils::ThrowIfFailed(D3D12CreateDevice(dxgiAdapter1.get(), D3D_FEATURE_LEVEL_12_2, IID_PPV_ARGS(&device)));
 
     #ifdef _DEBUG
-
-	// Ensure mesh shading is supported
-    if (!DXUtils::CheckMeshShaderSupport(device))
-    {
-		throw std::runtime_error("Mesh Shader support is required but not available on this device.");
-	}
         
     winrt::com_ptr<ID3D12InfoQueue> pInfoQueue;
     device.as(pInfoQueue);
@@ -130,38 +124,36 @@ Device DX12RendererSetup::CreateDevice()
     return Device(device);
 }
 
-CommandQueue DX12RendererSetup::CreateCommandQueue(const Device& device, D3D12_COMMAND_LIST_TYPE type)
+CommandQueue DX12RendererSetup::CreateCommandQueue(const Device& pDevice, const D3D12_COMMAND_LIST_TYPE pType)
 {
     winrt::com_ptr<ID3D12CommandQueue> commandQueue;
 
     D3D12_COMMAND_QUEUE_DESC queueDesc =
     {
-        .Type =     type,
+        .Type =     pType,
         .Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
         .Flags =    D3D12_COMMAND_QUEUE_FLAG_NONE,
         .NodeMask = 0
     };
 
-    DXUtils::ThrowIfFailed(device.GetCOM()->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue)));
+    DXUtils::ThrowIfFailed(pDevice.GetCOM()->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue)));
 
     return CommandQueue(commandQueue);
 }
 
-SwapChainManager DX12RendererSetup::CreateSwapChainManager(const HexEngine::SDL::SDLWindow& window, const Device& device, const CommandQueue& commandQueue, std::uint8_t bufferCount)
+SwapChainManager DX12RendererSetup::CreateSwapChainManager(const HexEngine::SDL::SDLWindow& pWindow, const Device& pDevice, const CommandQueue& pCommandQueue, const uint8_t
+                                                           pBufferCount)
 {
-    // TODO: UNHARD-CODE THIS
-    constexpr std::uint32_t width = 1280, height = 720;
+    const SwapChain swapChain = CreateSwapChain(pWindow, pCommandQueue, pBufferCount);
+    const DescriptorHeap descriptorHeap = CreateDescriptorHeap(pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, pBufferCount);
+    const std::uint32_t rtvDescriptorSize = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     
-    const SwapChain swapChain = CreateSwapChain(window, commandQueue, width, height, bufferCount);
-    const DescriptorHeap descriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, bufferCount);
-    const std::uint32_t rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    
-    const std::vector<BackBuffer> backBuffers = CreateBackBuffers(device, swapChain, descriptorHeap, rtvDescriptorSize, bufferCount);
+    const std::vector<BackBuffer> backBuffers = CreateBackBuffers(pDevice, swapChain, descriptorHeap, rtvDescriptorSize, pBufferCount);
     
     return SwapChainManager(swapChain, descriptorHeap, backBuffers, rtvDescriptorSize);
 }
 
-SwapChain DX12RendererSetup::CreateSwapChain(const HexEngine::SDL::SDLWindow& window, const CommandQueue& commandQueue, const std::uint32_t& width, const std::uint32_t& height, const std::uint32_t& bufferCount)
+SwapChain DX12RendererSetup::CreateSwapChain(const HexEngine::SDL::SDLWindow& pWindow, const CommandQueue& pCommandQueue, const std::uint32_t& pBufferCount)
 {
     winrt::com_ptr<IDXGISwapChain4> swapChain;
     winrt::com_ptr<IDXGIFactory7> factory;
@@ -174,12 +166,12 @@ SwapChain DX12RendererSetup::CreateSwapChain(const HexEngine::SDL::SDLWindow& wi
 
     DXUtils::ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&factory)));
 
-    std::uint32_t swapChainFlags = DXUtils::CheckTearingSupport() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+    std::uint32_t swapChainFlags = DX12DeviceCapabilities::CheckTearingSupport() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
     
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc =
     {
-        .Width =        width,
-        .Height =       height,
+        .Width =        pWindow.GetWidth(),
+        .Height =       pWindow.GetHeight(),
         .Format =       DXGI_FORMAT_R8G8B8A8_UNORM,
         .Stereo =       false,
         .SampleDesc =
@@ -188,21 +180,21 @@ SwapChain DX12RendererSetup::CreateSwapChain(const HexEngine::SDL::SDLWindow& wi
             .Quality    = 0
         },
         .BufferUsage =  DXGI_USAGE_RENDER_TARGET_OUTPUT,
-        .BufferCount =  bufferCount,
+        .BufferCount =  pBufferCount,
         .Scaling =      DXGI_SCALING_STRETCH,
         .SwapEffect =   DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL,
         .AlphaMode =    DXGI_ALPHA_MODE_UNSPECIFIED,
         .Flags =        swapChainFlags
     };
 
-    const HWND hWnd = static_cast<HWND>(SDL_GetPointerProperty(SDL_GetWindowProperties(window.GetSDLWindow().lock().get()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr));
+    const HWND hWnd = static_cast<HWND>(SDL_GetPointerProperty(SDL_GetWindowProperties(pWindow.GetSDLWindow().lock().get()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr));
     
     winrt::com_ptr<IDXGISwapChain1> swapChain1;
     DXUtils::ThrowIfFailed
     (
         factory->CreateSwapChainForHwnd
         (
-            commandQueue.GetCOM().get(),
+            pCommandQueue.GetCOM().get(),
             hWnd,
             &swapChainDesc,
             nullptr,
@@ -217,49 +209,50 @@ SwapChain DX12RendererSetup::CreateSwapChain(const HexEngine::SDL::SDLWindow& wi
     return SwapChain(swapChain);
 }
 
-DescriptorHeap DX12RendererSetup::CreateDescriptorHeap(const Device& device, const D3D12_DESCRIPTOR_HEAP_TYPE& type, const std::uint32_t& numDescriptors)
+DescriptorHeap DX12RendererSetup::CreateDescriptorHeap(const Device& pDevice, const D3D12_DESCRIPTOR_HEAP_TYPE& pType, const std::uint32_t& pNumDescriptors)
 {
     winrt::com_ptr<ID3D12DescriptorHeap> descriptorHeap;
 
-    const D3D12_DESCRIPTOR_HEAP_FLAGS flags = (type == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE); 
+    const D3D12_DESCRIPTOR_HEAP_FLAGS flags = (pType == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE); 
     
     const D3D12_DESCRIPTOR_HEAP_DESC desc =
     {
-        .Type = type,
-        .NumDescriptors = numDescriptors,
+        .Type = pType,
+        .NumDescriptors = pNumDescriptors,
         .Flags = flags,
         .NodeMask = 0
     };
 
-    DXUtils::ThrowIfFailed(device.GetCOM()->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap)));
+    DXUtils::ThrowIfFailed(pDevice.GetCOM()->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap)));
 
     return DescriptorHeap(descriptorHeap);
 }
 
-std::vector<BackBuffer> DX12RendererSetup::CreateBackBuffers(const Device& device, const SwapChain& swapChain, const DescriptorHeap& descriptorHeap, std::uint64_t renderTargetDescriptorSize, std::uint8_t bufferCount)
+std::vector<BackBuffer> DX12RendererSetup::CreateBackBuffers(const Device& pDevice, const SwapChain& pSwapChain, const DescriptorHeap& pDescriptorHeap, const uint64_t
+                                                             pRenderTargetDescriptorSize, const uint8_t pBufferCount)
 {
     
-    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(descriptorHeap->GetCPUDescriptorHandleForHeapStart());
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(pDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
     
     std::vector<BackBuffer> backBuffers;
     
-    for (int i = 0; i < bufferCount; ++i)
+    for (int i = 0; i < pBufferCount; ++i)
     {
         /* --- THIS PART COULD PROBABLY BE REFACTORED INTO CreateResource / CreateRenderTarget, --- */
         /*     IDK HOW TO DO IT WELL YET THOUGH                                                     */
         winrt::com_ptr<ID3D12Resource2> backBufferResource;
-        DXUtils::ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&backBufferResource)));
+        DXUtils::ThrowIfFailed(pSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBufferResource)));
 
         Resource backBufferRenderTarget = Resource(backBufferResource);
         
-        device->CreateRenderTargetView(backBufferRenderTarget.GetRaw(), nullptr, rtvHandle);
+        pDevice->CreateRenderTargetView(backBufferRenderTarget.GetRaw(), nullptr, rtvHandle);
         /* ---------------------------------------------------------------------------------------- */
 
-        CommandAllocator commandAllocator = CreateCommandAllocator(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+        CommandAllocator commandAllocator = CreateCommandAllocator(pDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
         
         backBuffers.push_back(BackBuffer(backBufferRenderTarget, commandAllocator));
 
-        rtvHandle.Offset(static_cast<std::int32_t>(renderTargetDescriptorSize));
+        rtvHandle.Offset(static_cast<std::int32_t>(pRenderTargetDescriptorSize));
     }
 
     return backBuffers;
@@ -302,15 +295,6 @@ HANDLE DX12RendererSetup::CreateFenceEvent()
     return fenceEvent;
 }
 
-std::uint64_t DX12RendererSetup::Signal(const winrt::com_ptr<ID3D12CommandQueue>& commandQueue, const winrt::com_ptr<ID3D12Fence>& fence, std::uint64_t& fenceValue)
-{
-    std::uint64_t fenceValueForSignal = ++fenceValue;
-
-    DXUtils::ThrowIfFailed(commandQueue->Signal(fence.get(), fenceValueForSignal));
-
-    return fenceValueForSignal;
-}
-
 void DX12RendererSetup::WaitForFenceValue(const winrt::com_ptr<ID3D12Fence>& fence, const std::uint64_t& fenceValue, const HANDLE& fenceEvent, std::chrono::milliseconds duration)
 {
     if (fence->GetCompletedValue() < fenceValue)
@@ -318,10 +302,4 @@ void DX12RendererSetup::WaitForFenceValue(const winrt::com_ptr<ID3D12Fence>& fen
         DXUtils::ThrowIfFailed(fence->SetEventOnCompletion(fenceValue, fenceEvent));
         WaitForSingleObject(fenceEvent, static_cast<DWORD>(duration.count()));
     }
-}
-
-void DX12RendererSetup::Flush(const winrt::com_ptr<ID3D12CommandQueue>& commandQueue, const winrt::com_ptr<ID3D12Fence>& fence, const HANDLE& fenceEvent, std::uint64_t& fenceValue)
-{
-    std::uint64_t fenceValueForSignal = Signal(commandQueue, fence, fenceValue);
-    WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
 }

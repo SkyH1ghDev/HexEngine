@@ -12,16 +12,15 @@ using namespace HexEngine::Engine;
 
 void EngineCore::Run()
 {
-    {
-        HexEngine::Input::InputHandler::Initialize();
-        HexEngine::Input::InputHandler::BindKey(SDL_SCANCODE_ESCAPE, PostQuitEvent_Callback);
+    HexEngine::Input::InputHandler::Initialize();
+    HexEngine::Input::InputHandler::BindKey(SDL_SCANCODE_ESCAPE, PostQuitEvent_Callback);
         
-        HexEngine::SDL::SDLWindow window {EngineSetup::CreateWindow()};
-        HexEngine::Graphics::DirectX12::DX12Renderer renderer {window};
+    const HexEngine::SDL::SDLWindow window {EngineSetup::CreateWindow(1280, 720)};
+    
+    HexEngine::Graphics::DirectX12::DX12Renderer renderer {window};
 
-        EngineLoop::Run(renderer);
-    }
-
+    EngineLoop::Run(renderer);
+    
     Quit();
 }
 

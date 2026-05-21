@@ -25,8 +25,8 @@ namespace HexEngine::Graphics::DirectX12
 
         // GPU Sync
         [[nodiscard]]
-        std::uint64_t Signal(const Fence& fence, std::uint64_t fenceValue) const;
-        void WaitForValue(const Fence& fence, std::uint64_t fenceValue) const;
+        std::uint64_t GPUSignal(const Fence& fence, std::uint64_t fenceValue) const;
+        void GPUWaitForValue(const Fence& fence, std::uint64_t fenceValue) const;
 
     private:
         winrt::com_ptr<ID3D12CommandQueue> m_commandQueue = nullptr;
