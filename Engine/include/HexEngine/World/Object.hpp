@@ -7,7 +7,7 @@
 
 namespace HexEngine::World
 {
-	// TODO: Being lazy, this should be moved to a separate file.
+	// HACK: Being lazy, this should be moved to a separate file.
 	struct Transform
 	{
 		DirectX::XMFLOAT4X4A world;
@@ -22,11 +22,10 @@ namespace HexEngine::World
 
 		void Update(Graphics::DirectX12::CommandList &cmdList, const Camera &camera);
 
-		[[nodiscard]] const Graphics::DirectX12::Resource &GetWorldBuffer() const { return mWorldBuffer; }
-
-		[[nodiscard]] const DirectX::XMFLOAT4X4A &GetWorldMatrix() const { return mTransform.world; }
-
-		void SetWorldMatrix(const DirectX::XMFLOAT4X4A &matrix) { mTransform.world = matrix; }
+		[[nodiscard]] const Graphics::DirectX12::Resource	&GetWorldBuffer() const	{ return mWorldBuffer; }
+		[[nodiscard]] const DirectX::XMFLOAT4X4A			&GetWorldMatrix() const	{ return mTransform.world; }
+		
+		void SetWorldMatrix(const DirectX::XMFLOAT4X4A &matrix)	{ mTransform.world = matrix; }
 
 	private:
 		Graphics::DirectX12::Resource mWorldBuffer;
