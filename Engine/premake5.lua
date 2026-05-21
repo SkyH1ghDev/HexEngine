@@ -15,7 +15,8 @@ project "Engine"
         "src/PCH/EnginePCH.cpp",
         "include/**.hpp", 
         "src/**.cpp", 
-        "src/**.hlsl"
+        "src/**.hlsl",
+        "assets/**.hlsl"
     }
 
     pchheader "EnginePCH.hpp"
@@ -29,42 +30,42 @@ project "Engine"
         shaderassembleroutput(targetBuildPath .. "/Shader/asm/%%(Filename).asm")
         shadermodel("6.6")
 
-    filter "files:**_vs.hlsl"
+    filter "files:**/vs_**.hlsl"
         removeflags("ExcludeFromBuild")
         shaderentry("main")
         shadertype("Vertex")
     
-    filter "files:**_hs.hlsl"
+    filter "files:**/hs_**.hlsl"
         removeflags("ExcludeFromBuild")
         shaderentry("main")
         shadertype("Hull")
     
-    filter "files:**_ds.hlsl"
+    filter "files:**/ds_**.hlsl"
         removeflags("ExcludeFromBuild")
         shaderentry("main")
         shadertype("Domain")
     
-    filter "files:**_gs.hlsl"
+    filter "files:**/gs_**.hlsl"
         removeflags("ExcludeFromBuild")
         shaderentry("main")
         shadertype("Geometry")
     
-    filter "files:**_ps.hlsl"
+    filter "files:**/ps_**.hlsl"
         removeflags("ExcludeFromBuild")
         shaderentry("main")
         shadertype("Pixel")
     
-    filter "files:**_ms.hlsl"
+    filter "files:**/ms_**.hlsl"
         removeflags("ExcludeFromBuild")
         shaderentry("main")
         shadertype("Mesh")
     
-    filter "files:**_as.hlsl"
+    filter "files:**/as_**.hlsl"
         removeflags("ExcludeFromBuild")
         shaderentry("main")
         shadertype("Amplification")
         
-    filter "files:**_cs.hlsl"
+    filter "files:**/cs_**.hlsl"
         removeflags("ExcludeFromBuild")
         shaderentry("main")
         shadertype("Compute")

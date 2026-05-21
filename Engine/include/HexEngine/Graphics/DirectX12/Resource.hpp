@@ -20,7 +20,7 @@ namespace HexEngine::Graphics::DirectX12
          * @return WinRT ComPtr of ID3D12Resource
          */
         [[maybe_unused]] [[nodiscard]]
-        winrt::com_ptr<ID3D12Resource2> GetCOM() const;
+         winrt::com_ptr<ID3D12Resource2> GetCOM() const;
 
         /**
          * 
