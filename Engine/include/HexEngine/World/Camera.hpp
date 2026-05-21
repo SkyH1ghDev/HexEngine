@@ -1,7 +1,6 @@
 #pragma once
 #include <d3d12.h>
 #include <DirectXMath.h>
-#include <HexEngine/Graphics/DirectX12/Resource.hpp>
 
 namespace HexEngine::World
 {
@@ -20,6 +19,12 @@ namespace HexEngine::World
 
 		void SetView(DirectX::XMFLOAT4X4A mat)			{ mView = mat;			}
 		void SetProjection(DirectX::XMFLOAT4X4A mat)	{ mProjection = mat;	}
+
+		void SetCamera(DirectX::XMFLOAT3 position,
+					   DirectX::XMFLOAT3 forward,
+					   DirectX::XMFLOAT3 up,
+					   float fovY, float aspectRatio,
+					   float nearZ, float farZ);
 
 	private:
 		DirectX::XMFLOAT4X4A mView;
