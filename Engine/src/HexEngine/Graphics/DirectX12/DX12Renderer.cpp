@@ -70,6 +70,8 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
         throw std::runtime_error("Mesh Shader support is required but not available on this device.");
     }
     
+    mDirectCommandList->Close();
+    
 	// Load Assets
     {
 		// Load Meshes
@@ -136,34 +138,17 @@ void DX12Renderer::Draw()
 
 void DX12Renderer::Render()
 {
- 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-/*
-    BackBuffer &backBuffer = m_swapChainManager.GetCurrentBackBuffer();
-    DescriptorHeap &backBufferDescriptorHeap = m_swapChainManager.GetDescriptorHeap();
+    BackBuffer &backBuffer = mSwapChainManager.GetCurrentBackBuffer();
+    DescriptorHeap &backBufferDescriptorHeap = mSwapChainManager.GetDescriptorHeap();
     Resource &backBufferRenderTarget = backBuffer.GetRenderTarget();
 
-    HRESULT res = backBufferCommandAllocator->Reset();
+    HRESULT res = mDirectCommandAllocator->Reset();
     if (FAILED(res))
     {
         std::print("Failed to reset backBufferCommandAllocator");
     }
     
-    res = mCommandList->Reset(backBufferCommandAllocator.GetRaw(), nullptr);
+    res = mDirectCommandList->Reset(mDirectCommandAllocator.GetRaw(), nullptr);
     if (FAILED(res))
     {
         std::print("Failed to reset commandList");
@@ -178,7 +163,7 @@ void DX12Renderer::Render()
             D3D12_RESOURCE_STATE_RENDER_TARGET
         );
     
-        mCommandList->ResourceBarrier(1, &barrier);
+        mDirectCommandList->ResourceBarrier(1, &barrier);
     
         constexpr std::array<float, 4> clearColour = { 0.6f, 0.9f, 0.5f, 1.0f };
 
@@ -188,8 +173,8 @@ void DX12Renderer::Render()
             mSwapChainManager.GetRenderTargetDescriptorSize()
         );
 
-        mCommandList->ClearRenderTargetView(rtv, clearColour.data(), 0, nullptr);
-        mCommandList->OMSetRenderTargets(1, &rtv, false, nullptr);
+        mDirectCommandList->ClearRenderTargetView(rtv, clearColour.data(), 0, nullptr);
+        mDirectCommandList->OMSetRenderTargets(1, &rtv, false, nullptr);
 
         std::vector<ID3D12DescriptorHeap*> descriptorHeaps =
         {
@@ -198,9 +183,9 @@ void DX12Renderer::Render()
             #endif
         };
         
-        mCommandList->SetDescriptorHeaps(static_cast<std::uint32_t>(descriptorHeaps.size()), descriptorHeaps.data());
+        mDirectCommandList->SetDescriptorHeaps(static_cast<std::uint32_t>(descriptorHeaps.size()), descriptorHeaps.data());
         #if defined(_DEBUG)
-        HexEngine::Graphics::UI::ImGuiTool::RenderDrawData(mCommandList);
+        HexEngine::Graphics::UI::ImGuiTool::RenderDrawData(mDirectCommandList);
         #endif
     }
 
@@ -212,13 +197,14 @@ void DX12Renderer::Render()
             D3D12_RESOURCE_STATE_PRESENT
         );
 
-        mCommandList->ResourceBarrier(1, &barrier);
+        mDirectCommandList->ResourceBarrier(1, &barrier);
 
-        DirectXUtils::ThrowIfFailed(mCommandList->Close());
+        DirectXUtils::ThrowIfFailed(mDirectCommandList->Close());
 
         // TODO: EXECUTE COMMAND LISTS :)
         
-        mCommandQueue.AppendCommandList(m_commandList);
-        //mCommandQueue.ExecuteCommandLists({mCommandList});
-    }*/
+        //mDirectCommandQueue.AppendCommandList(mDirectCommandList);
+        auto vec = std::vector{mDirectCommandList};
+        mDirectCommandQueue.ExecuteCommandLists(vec);
+    }
 }

@@ -22,7 +22,7 @@ namespace HexEngine::Graphics::DirectX12
         [[maybe_unused]] [[nodiscard]]
         winrt::com_ptr<ID3D12CommandQueue> GetCOM() const;
     
-        void ExecuteCommandLists(std::vector<CommandList>& pCommandList) const;
+        void ExecuteCommandLists(std::vector<CommandList>& pCommandLists) const;
 
         // GPU Sync
         [[nodiscard]]

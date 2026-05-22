@@ -12,12 +12,19 @@ winrt::com_ptr<ID3D12CommandQueue> CommandQueue::operator->() const
     return mCommandQueue;
 }
 
-void CommandQueue::ExecuteCommandLists([[maybe_unused]] std::vector<CommandList>& pCommandList) const
+void CommandQueue::ExecuteCommandLists([[maybe_unused]] std::vector<CommandList>& pCommandLists) const
 {
-    // TODO: FIX THIS :)
+    // Convert from vector of ComPtr to vector of raw pointers
+    std::vector<ID3D12CommandList*> commandLists = { };
+    commandLists.reserve(pCommandLists.size());
     
-    //mCommandQueue->ExecuteCommandLists(static_cast<std::uint32_t>(pCommandList.size()), pCommandList.data());
-    //pCommandList.clear();
+    for (const auto& commandList : pCommandLists)
+    {
+        commandLists.push_back(commandList.GetRaw());
+    }
+    
+    mCommandQueue->ExecuteCommandLists(static_cast<std::uint32_t>(pCommandLists.size()), commandLists.data());
+    pCommandLists.clear();
 }
 
 std::uint64_t CommandQueue::GPUSignal(const Fence& fence, std::uint64_t fenceValue) const
