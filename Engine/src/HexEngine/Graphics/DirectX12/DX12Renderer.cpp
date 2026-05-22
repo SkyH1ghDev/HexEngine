@@ -42,10 +42,10 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
     {
 		// Load Meshes
         mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Maxwell.obj");
-        Assets::MeshLoader::UploadMeshResources(m_device, m_commandQueue, commandAllocator, m_commandList, mMeshMaxwell);
+        Assets::MeshLoader::UploadMeshResources(mDevice, mCommandQueue, commandAllocator, m_commandList, mMeshMaxwell);
 
         mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Whiskers.obj");
-        Assets::MeshLoader::UploadMeshResources(m_device, m_commandQueue, commandAllocator, m_commandList, mMeshWhiskers);
+        Assets::MeshLoader::UploadMeshResources(mDevice, mCommandQueue, commandAllocator, m_commandList, mMeshWhiskers);
 
 		// Load Shaders
         //mVShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/vs_VertexShader.cso");
@@ -53,11 +53,11 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
         mPShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/ps_PixelShader.cso");
 
 		// Create Root Signatures
-		mMeshRootSignature = Assets::ShaderLoader::CreateRootSignature(m_device, mMShader);
+		mMeshRootSignature = Assets::ShaderLoader::CreateRootSignature(mDevice, mMShader);
 		//mGraphicsRootSignature = Assets::ShaderLoader::CreateRootSignature(m_device, mVShader);
 
 		// Create Pipeline States
-		mMeshPipelineState = Assets::ShaderLoader::CreateMeshPipelineState(m_device, mMeshRootSignature, nullptr, &mMShader, &mPShader);
+		mMeshPipelineState = Assets::ShaderLoader::CreateMeshPipelineState(mDevice, mMeshRootSignature, nullptr, &mMShader, &mPShader);
 		//mGraphicsPipelineState = Assets::ShaderLoader::CreateGraphicsPipelineState(m_device, mGraphicsRootSignature, Assets::MeshLoader::c_DefualtElementDesc, 3, &mVShader, &mPShader);
     }
 }
