@@ -7,7 +7,7 @@ project "Engine"
     objdir(objBuildPath .. "/%{prj.name}")
     includedirs {"include/", "include/**",  targetBuildPath .. "/External/include/"}
     libdirs {targetBuildPath .. "/External/lib/"}
-    dependson{"SDL3", "DirectXToolKit", "DirectXHeaders", "ImGui"}
+    dependson{"SDL3", "DirectXToolKit", "DirectXHeaders", "DirectXMesh", "ImGui"}
     buildoptions { "/FIEnginePCH.hpp" }
 
     files {

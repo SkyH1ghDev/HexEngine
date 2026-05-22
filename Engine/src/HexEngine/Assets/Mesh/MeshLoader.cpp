@@ -8,11 +8,11 @@
 #include <DirectXMesh.h>
 #include <utils/WaveFrontReader.h>
 
+using namespace winrt;
+using namespace DirectX;
 using namespace DirectXUtils;
 using namespace HexEngine::Assets;
-using namespace DirectX;
-using namespace winrt;
-
+using namespace HexEngine::Graphics::DirectX12;
 
 static void ComputeBoundingCone(
 	XMVECTOR &outAxis, 
@@ -83,10 +83,12 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 	// Load Wavefront OBJ
 	auto mesh = std::make_unique<DX::WaveFrontReader<uint16_t>>();
 
+	//std::string fullPath = std::filesystem::absolute(filePath).string();
+
 	HRESULT hr = mesh->Load(StringUtils::NarrowToWide(filePath).c_str());
 	if (FAILED(hr))
 	{
-		throw std::runtime_error("Failed to load " + std::string(filePath) + " (" + StringUtils::HResultToString(hr) + ")");
+		throw std::runtime_error("Failed to load mesh: " + std::string(filePath) + " (" + StringUtils::HResultToString(hr) + ")");
 	}
 
 	size_t nFaces = mesh->indices.size() / 3;
@@ -117,7 +119,7 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 		throw std::runtime_error("ComputeMeshlets failed: " + StringUtils::HResultToString(hr));
 	}
 
-	const uint16_t* uniqueVertexIndices = reinterpret_cast<const uint16_t* >(uniqueVertexIB.data());
+	const uint16_t* uniqueVertexIndices = reinterpret_cast<const uint16_t*>(uniqueVertexIB.data());
 
 	// Store mesh data
 	MeshData meshData;
@@ -150,6 +152,22 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 		meshData.meshletCullData.push_back(mcd);
 	}
 
+	meshData.meshletVertices.reserve(uniqueVertexIB.size());
+	for (const uint8_t &index : uniqueVertexIB)
+	{
+		meshData.meshletVertices.emplace_back(index);
+	}
+
+	meshData.meshletTriangles.reserve(primitiveIndices.size());
+	for (const MeshletTriangle &tri : primitiveIndices)
+	{
+		MeshletTriangleData mtd{};
+		mtd.i0 = tri.i0;
+		mtd.i1 = tri.i1;
+		mtd.i2 = tri.i2;
+		meshData.meshletTriangles.push_back(mtd);
+	}
+
 	return meshData;
 }
 
@@ -161,42 +179,41 @@ constexpr T DivRoundUp(T num, U denom)
 }
 
 void MeshLoader::UploadMeshResources(
-	com_ptr<ID3D12Device9> device, 
-	com_ptr<ID3D12CommandQueue> cmdQueue, 
-	com_ptr<ID3D12CommandAllocator> cmdAlloc, 
-	com_ptr<ID3D12GraphicsCommandList> cmdList, 
+	Device &pDevice,
+	CommandQueue &pCmdQueue,
+	CommandAllocator &pCmdAlloc,
+	CommandList &pCmdList,
 	MeshData &meshData)
 {
 	MeshResources &res = meshData.resources;
 
-	// Create default resources
-	auto vertexDesc				= CD3DX12_RESOURCE_DESC::Buffer(meshData.vertices.size() * sizeof(meshData.vertices[0]));
-	auto indexDesc				= CD3DX12_RESOURCE_DESC::Buffer(meshData.indices.size() * sizeof(meshData.indices[0]));
-	auto meshletDesc			= CD3DX12_RESOURCE_DESC::Buffer(meshData.meshlets.size() * sizeof(meshData.meshlets[0]));
-	auto meshletVertexDesc		= CD3DX12_RESOURCE_DESC::Buffer(DivRoundUp(meshData.meshletVertices.size(), 4) * 4);
-	auto meshletTriangleDesc	= CD3DX12_RESOURCE_DESC::Buffer(meshData.meshletTriangles.size() * sizeof(meshData.meshletTriangles[0]));
-	auto meshletCullDataDesc	= CD3DX12_RESOURCE_DESC::Buffer(meshData.meshlets.size() * sizeof(MeshletCullData));
-	auto meshInfoDesc			= CD3DX12_RESOURCE_DESC::Buffer(sizeof(MeshInfo));
+	// Create DEFAULT resources
+	auto vertexDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.vertices.size() * sizeof(VertexData));
+	auto indexDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.indices.size() * sizeof(meshData.indices[0]));
+	auto meshletDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshlets.size() * sizeof(meshData.meshlets[0]));
+	auto meshletVertexDesc = CD3DX12_RESOURCE_DESC::Buffer(DivRoundUp(meshData.meshletVertices.size(), 4) * 4);
+	auto meshletTriangleDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshletTriangles.size() * sizeof(meshData.meshletTriangles[0]));
+	auto meshletCullDataDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshlets.size() * sizeof(MeshletCullData));
+	auto meshInfoDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(MeshInfo));
 
 	auto defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.vertexBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &indexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.indexBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletVerticesBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletTrianglesBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletCullDataBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshInfoBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.vertexBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &indexDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.indexBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.meshletBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.meshletVerticesBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.meshletTrianglesBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.meshletCullDataBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.meshInfoBuffer)));
 
 	// Create views
 	res.indexBufferView.BufferLocation = res.indexBuffer->GetGPUVirtualAddress();
 	res.indexBufferView.Format = DXGI_FORMAT_R16_UINT;
-	res.indexBufferView.SizeInBytes = static_cast<uint32_t>(meshData.indices.size() * sizeof(meshData.indices[0]));
-	
+	res.indexBufferView.SizeInBytes = static_cast<std::uint32_t>(meshData.indices.size() * sizeof(meshData.indices[0]));
 	res.vertexBufferView.BufferLocation = res.vertexBuffer->GetGPUVirtualAddress();
-	res.vertexBufferView.SizeInBytes = static_cast<uint32_t>(meshData.vertices.size() * sizeof(meshData.vertices[0]));
+	res.vertexBufferView.SizeInBytes = static_cast<std::uint32_t>(meshData.vertices.size() * sizeof(VertexData));
 	res.vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-	// Create upload resources
+	// Upload buffers (UPLOAD heap)
 	com_ptr<ID3D12Resource> vertexUpload;
 	com_ptr<ID3D12Resource> indexUpload;
 	com_ptr<ID3D12Resource> meshletUpload;
@@ -206,100 +223,82 @@ void MeshLoader::UploadMeshResources(
 	com_ptr<ID3D12Resource> meshInfoUpload;
 
 	auto uploadHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &indexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&indexUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletVertexUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletTriangleUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletCullDataUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshInfoUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &indexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&indexUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletVertexUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletTriangleUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletCullDataUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshInfoUpload)));
 
-	// Map & copy memory to upload heap
+	// Copy CPU -> upload heap
+	auto CopyToUpload = [](ID3D12Resource *res, auto *data, std::size_t sizeBytes) {
+		std::uint8_t *mem = nullptr;
+		res->Map(0, nullptr, reinterpret_cast<void **>(&mem));
+		std::memcpy(mem, data, sizeBytes);
+		res->Unmap(0, nullptr);
+	};
+
+	CopyToUpload(vertexUpload.get(), meshData.vertices.data(), meshData.vertices.size() * sizeof(VertexData));
+	CopyToUpload(indexUpload.get(), meshData.indices.data(), meshData.indices.size() * sizeof(meshData.indices[0]));
+	CopyToUpload(meshletUpload.get(), meshData.meshlets.data(),	meshData.meshlets.size() * sizeof(meshData.meshlets[0]));
+	CopyToUpload(meshletVertexUpload.get(), meshData.meshletVertices.data(), meshData.meshletVertices.size() * sizeof(meshData.meshletVertices[0]));
+	CopyToUpload(meshletTriangleUpload.get(), meshData.meshletTriangles.data(),	meshData.meshletTriangles.size() * sizeof(meshData.meshletTriangles[0]));
+	CopyToUpload(meshletCullDataUpload.get(), meshData.meshletCullData.data(), meshData.meshletCullData.size() * sizeof(meshData.meshletCullData[0]));
+
+	MeshInfo info{};
+	info.IndexSize = sizeof(meshData.indices[0]);
+	info.MeshletCount = (std::uint32_t)meshData.meshlets.size();
+	info.LastMeshletVertCount = meshData.meshlets.back().vertexCount;
+	info.LastMeshletPrimCount = meshData.meshlets.back().primitiveCount;
+
+	CopyToUpload(meshInfoUpload.get(), &info, sizeof(info));
+
+	// GPU upload pass
+	pCmdList->Reset(pCmdAlloc.GetRaw(), nullptr);
+
+	std::vector<D3D12_RESOURCE_BARRIER> barriers;
+
+	auto AddBufferUpload = [&](ID3D12Resource *dst, ID3D12Resource *src, D3D12_RESOURCE_STATES finalState) {
+		barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(dst, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST));
+		pCmdList->ResourceBarrier(1, &barriers.back());
+
+		pCmdList->CopyResource(dst, src);
+		barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(dst, D3D12_RESOURCE_STATE_COPY_DEST, finalState));
+		pCmdList->ResourceBarrier(1, &barriers.back());
+	};
+
+	AddBufferUpload(res.vertexBuffer.get(), vertexUpload.get(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+	AddBufferUpload(res.indexBuffer.get(), indexUpload.get(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+	AddBufferUpload(res.meshletBuffer.get(), meshletUpload.get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	AddBufferUpload(res.meshletVerticesBuffer.get(), meshletVertexUpload.get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	AddBufferUpload(res.meshletTrianglesBuffer.get(), meshletTriangleUpload.get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	AddBufferUpload(res.meshletCullDataBuffer.get(), meshletCullDataUpload.get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	AddBufferUpload(res.meshInfoBuffer.get(), meshInfoUpload.get(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
+	ThrowIfFailed(pCmdList->Close());
+
+	ID3D12CommandList *lists[] = { pCmdList.GetRaw() };
+	pCmdQueue.GetCOM()->ExecuteCommandLists(1, lists);
+
+	// Fence sync
+	com_ptr<ID3D12Fence> fence;
+	ThrowIfFailed(pDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+
+	pCmdQueue.GetCOM()->Signal(fence.get(), 1);
+
+	if (fence->GetCompletedValue() != 1)
 	{
-		uint8_t *memory = nullptr;
-		vertexUpload->Map(0, nullptr, reinterpret_cast<void **>(&memory));
-		std::memcpy(memory, meshData.vertices.data(), meshData.vertices.size());
-		vertexUpload->Unmap(0, nullptr);
+		HANDLE event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		fence->SetEventOnCompletion(1, event);
+
+		DWORD lErr = GetLastError();
+		if (lErr != ERROR_SUCCESS)
+		{
+			throw std::runtime_error("Failed to set fence event");
+		}
+
+		WaitForSingleObjectEx(event, 10000, false);
+		CloseHandle(event);
 	}
-
-	{
-		uint8_t *memory = nullptr;
-		indexUpload->Map(0, nullptr, reinterpret_cast<void **>(&memory));
-		std::memcpy(memory, meshData.indices.data(), meshData.indices.size());
-		indexUpload->Unmap(0, nullptr);
-	}
-
-	{
-		uint8_t *memory = nullptr;
-		meshletUpload->Map(0, nullptr, reinterpret_cast<void **>(&memory));
-		std::memcpy(memory, meshData.meshlets.data(), meshData.meshlets.size() * sizeof(meshData.meshlets[0]));
-		meshletUpload->Unmap(0, nullptr);
-	}
-
-	{
-		uint8_t *memory = nullptr;
-		meshletVertexUpload->Map(0, nullptr, reinterpret_cast<void **>(&memory));
-		std::memcpy(memory, meshData.meshletVertices.data(), meshData.meshletVertices.size() * sizeof(meshData.meshletVertices[0]));
-		meshletVertexUpload->Unmap(0, nullptr);
-	}
-
-	{
-		uint8_t *memory = nullptr;
-		meshletTriangleUpload->Map(0, nullptr, reinterpret_cast<void **>(&memory));
-		std::memcpy(memory, meshData.meshletTriangles.data(), meshData.meshletTriangles.size() * sizeof(meshData.meshletTriangles[0]));
-		meshletTriangleUpload->Unmap(0, nullptr);
-	}
-
-	{
-		uint8_t *memory = nullptr;
-		meshletCullDataUpload->Map(0, nullptr, reinterpret_cast<void **>(&memory));
-		std::memcpy(memory, meshData.meshletCullData.data(), meshData.meshletCullData.size() * sizeof(meshData.meshletCullData[0]));
-		meshletCullDataUpload->Unmap(0, nullptr);
-	}
-
-	{
-		MeshInfo info = {};
-		info.IndexSize = sizeof(meshData.indices[0]);
-		info.MeshletCount = static_cast<uint32_t>(meshData.meshlets.size());
-		info.LastMeshletVertCount = meshData.meshlets.back().vertexCount;
-		info.LastMeshletPrimCount = meshData.meshlets.back().primitiveCount;
-
-		uint8_t *memory = nullptr;
-		meshInfoUpload->Map(0, nullptr, reinterpret_cast<void **>(&memory));
-		std::memcpy(memory, &info, sizeof(MeshInfo));
-		meshInfoUpload->Unmap(0, nullptr);
-	}
-
-	// Populate our command list
-	cmdList->Reset(cmdAlloc.get(), nullptr);
-
-	D3D12_RESOURCE_BARRIER postCopyBarriers[7]{};
-
-	cmdList->CopyResource(res.vertexBuffer.get(), vertexUpload.get());
-	postCopyBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(res.vertexBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	cmdList->CopyResource(res.indexBuffer.get(), indexUpload.get());
-	postCopyBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(res.indexBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	cmdList->CopyResource(res.meshletBuffer.get(), meshletUpload.get());
-	postCopyBarriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshletBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	cmdList->CopyResource(res.meshletVerticesBuffer.get(), meshletVertexUpload.get());
-	postCopyBarriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshletVerticesBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	cmdList->CopyResource(res.meshletTrianglesBuffer.get(), meshletTriangleUpload.get());
-	postCopyBarriers[4] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshletTrianglesBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	cmdList->CopyResource(res.meshletCullDataBuffer.get(), meshletCullDataUpload.get());
-	postCopyBarriers[5] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshletCullDataBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-	cmdList->CopyResource(res.meshInfoBuffer.get(), meshInfoUpload.get());
-	postCopyBarriers[6] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshInfoBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-
-	cmdList->ResourceBarrier(ARRAYSIZE(postCopyBarriers), postCopyBarriers);
-
-	ThrowIfFailed(cmdList->Close());
-
-	ID3D12CommandList *ppCommandLists[] = { cmdList.get()};
-	cmdQueue->ExecuteCommandLists(1, ppCommandLists);
 }

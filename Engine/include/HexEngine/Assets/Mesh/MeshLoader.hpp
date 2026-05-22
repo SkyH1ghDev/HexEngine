@@ -1,5 +1,9 @@
 #pragma once
 #include "MeshData.hpp"
+#include <HexEngine/Graphics/DirectX12/Device.hpp>
+#include <HexEngine/Graphics/DirectX12/CommandQueue.hpp>
+#include <HexEngine/Graphics/DirectX12/CommandAllocator.hpp>
+#include <HexEngine/Graphics/DirectX12/CommandList.hpp>
 
 namespace HexEngine::Assets::MeshLoader
 {
@@ -13,10 +17,10 @@ namespace HexEngine::Assets::MeshLoader
 	MeshData LoadMesh(std::string_view filePath);
 
 	void UploadMeshResources(
-		winrt::com_ptr<ID3D12Device9> device,
-		winrt::com_ptr<ID3D12CommandQueue> cmdQueue,
-		winrt::com_ptr<ID3D12CommandAllocator> cmdAlloc,
-		winrt::com_ptr<ID3D12GraphicsCommandList> cmdList,
+		HexEngine::Graphics::DirectX12::Device &pDevice,
+		HexEngine::Graphics::DirectX12::CommandQueue &pCmdQueue,
+		HexEngine::Graphics::DirectX12::CommandAllocator &pCmdAlloc,
+		HexEngine::Graphics::DirectX12::CommandList &pCmdList,
 		MeshData &meshData
 	);
 }

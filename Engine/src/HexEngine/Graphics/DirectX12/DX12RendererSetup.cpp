@@ -248,7 +248,6 @@ std::vector<BackBuffer> DX12RendererSetup::CreateBackBuffers(const Device& pDevi
         pDevice->CreateRenderTargetView(backBufferRenderTarget.GetRaw(), nullptr, rtvHandle);
         /* ---------------------------------------------------------------------------------------- */
 
-        
         backBuffers.push_back(BackBuffer(backBufferRenderTarget));
 
         rtvHandle.Offset(static_cast<std::int32_t>(pRenderTargetDescriptorSize));

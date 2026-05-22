@@ -65,101 +65,33 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
     HexEngine::Graphics::UI::ImGuiTool::Initialize(window, mDevice, mDirectCommandQueue, mImGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
     #endif
     
-    
-    
-    
-    
-    
-    // CREATE VERTEX BUFFER
-    CD3DX12_HEAP_PROPERTIES vertexBufferHeapProps = CD3DX12_HEAP_PROPERTIES {D3D12_HEAP_TYPE_DEFAULT};
-    
-    CD3DX12_RESOURCE_DESC vertexBufferResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(_countof(g_Vertices) * sizeof(VertexPosColor), D3D12_RESOURCE_FLAG_NONE); 
-    
-    winrt::com_ptr<ID3D12Resource> vertexBuffer {nullptr};
-    DirectXUtils::ThrowIfFailed(
-        mDevice->CreateCommittedResource(
-            &vertexBufferHeapProps, D3D12_HEAP_FLAG_NONE,
-            &vertexBufferResourceDesc, D3D12_RESOURCE_STATE_COMMON, nullptr,
-            IID_PPV_ARGS(&vertexBuffer)
-        )
-    );
-    
-    CD3DX12_HEAP_PROPERTIES vertexIntermediaryBufferHeapProps = CD3DX12_HEAP_PROPERTIES{D3D12_HEAP_TYPE_UPLOAD};
-    
-    CD3DX12_RESOURCE_DESC vertexIntermediaryBufferResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(_countof(g_Vertices) * sizeof(VertexPosColor));
-    
-    winrt::com_ptr<ID3D12Resource> vertexIntermediaryBuffer {nullptr};
-    DirectXUtils::ThrowIfFailed(
-        mDevice->CreateCommittedResource(
-            &vertexIntermediaryBufferHeapProps, D3D12_HEAP_FLAG_NONE,
-            &vertexIntermediaryBufferResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-            IID_PPV_ARGS(&vertexIntermediaryBuffer)
-        )    
-    );
-    
-    D3D12_SUBRESOURCE_DATA vertexSubresourceData 
+    if (!DX12DeviceCapabilities::CheckMeshShaderSupport(mDevice))
     {
-        .pData = g_Vertices,
-        .RowPitch = _countof(g_Vertices) * sizeof(VertexPosColor),
-        .SlicePitch = _countof(g_Vertices) * sizeof(VertexPosColor),
-    };
+        throw std::runtime_error("Mesh Shader support is required but not available on this device.");
+    }
     
-    CD3DX12_RESOURCE_BARRIER vertexBufferBarrier = CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-    mCopyCommandList->ResourceBarrier(1, &vertexBufferBarrier);
-    
-    UpdateSubresources(mCopyCommandList.GetRaw(), vertexBuffer.get(), vertexIntermediaryBuffer.get(), 0, 0, 1, &vertexSubresourceData);
-    
-    
-    
-    // CREATE INDEX BUFFER
-    CD3DX12_HEAP_PROPERTIES indexBufferHeapProps = CD3DX12_HEAP_PROPERTIES {D3D12_HEAP_TYPE_DEFAULT};
-    
-    CD3DX12_RESOURCE_DESC indexBufferResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(_countof(g_Vertices) * 2, D3D12_RESOURCE_FLAG_NONE); 
-    
-    winrt::com_ptr<ID3D12Resource> indexBuffer {nullptr};
-    DirectXUtils::ThrowIfFailed(
-        mDevice->CreateCommittedResource(
-            &indexBufferHeapProps, D3D12_HEAP_FLAG_NONE,
-            &indexBufferResourceDesc, D3D12_RESOURCE_STATE_COMMON, nullptr,
-            IID_PPV_ARGS(&indexBuffer)
-        )
-    );
-    
-    CD3DX12_HEAP_PROPERTIES indexIntermediaryBufferHeapProps = CD3DX12_HEAP_PROPERTIES{D3D12_HEAP_TYPE_UPLOAD};
-    
-    CD3DX12_RESOURCE_DESC indexIntermediaryBufferResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(_countof(g_Vertices) * 2);
-    
-    winrt::com_ptr<ID3D12Resource> indexIntermediaryBuffer {nullptr};
-    DirectXUtils::ThrowIfFailed(
-        mDevice->CreateCommittedResource(
-            &indexIntermediaryBufferHeapProps, D3D12_HEAP_FLAG_NONE,
-            &indexIntermediaryBufferResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-            IID_PPV_ARGS(&indexIntermediaryBuffer)
-        )    
-    );
-    
-    D3D12_SUBRESOURCE_DATA indexSubresourceData 
+	// Load Assets
     {
-        .pData = g_Indices,
-        .RowPitch = _countof(g_Vertices) * 2,
-        .SlicePitch = _countof(g_Vertices) * 2
-    };
-    
-    CD3DX12_RESOURCE_BARRIER indexBufferBarrier = CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer.get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-    mCopyCommandList->ResourceBarrier(1, &indexBufferBarrier);
-    
-    UpdateSubresources(mCopyCommandList.GetRaw(), indexBuffer.get(), indexIntermediaryBuffer.get(), 0, 0, 1, &indexSubresourceData);
-    
-    DirectXUtils::ThrowIfFailed(mCopyCommandList->Close());
-    
-    mCopyCommandQueue->ExecuteCommandLists(1, std::vector<ID3D12CommandList*>({mCopyCommandList.GetRaw()}).data());
-    
-    D3D12_INPUT_ELEMENT_DESC inputLayout[]
-    {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 1 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 1 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 1 }
-    };
+		// Load Meshes
+        mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Maxwell.obj");
+        Assets::MeshLoader::UploadMeshResources(mDevice, mDirectCommandQueue, mDirectCommandAllocator, mDirectCommandList, mMeshMaxwell);
+
+        mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Whiskers.obj");
+        Assets::MeshLoader::UploadMeshResources(mDevice, mDirectCommandQueue, mDirectCommandAllocator, mDirectCommandList, mMeshWhiskers);
+
+		// Load Shaders
+        //mVShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/vs_VertexShader.cso");
+        mMShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/ms_MeshShader.cso");
+        mPShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/ps_PixelShader.cso");
+
+		// Create Root Signatures
+		mMeshRootSignature = Assets::ShaderLoader::CreateRootSignature(mDevice, mMShader);
+		//mGraphicsRootSignature = Assets::ShaderLoader::CreateRootSignature(m_device, mVShader);
+
+		// Create Pipeline States
+		mMeshPipelineState = Assets::ShaderLoader::CreateMeshPipelineState(mDevice, mMeshRootSignature, nullptr, &mMShader, &mPShader);
+		//mGraphicsPipelineState = Assets::ShaderLoader::CreateGraphicsPipelineState(m_device, mGraphicsRootSignature, Assets::MeshLoader::c_DefualtElementDesc, 3, &mVShader, &mPShader);
+    }
 }
 
 DX12Renderer::~DX12Renderer()
@@ -220,15 +152,11 @@ void DX12Renderer::Render()
     
     
     
-    
-    
-    
-    /*
-    BackBuffer& backBuffer = mSwapChainManager.GetCurrentBackBuffer();
-    DescriptorHeap& backBufferDescriptorHeap = mSwapChainManager.GetDescriptorHeap();
-    CommandAllocator& backBufferCommandAllocator = backBuffer.GetCommandAllocator();
-    Resource& backBufferRenderTarget = backBuffer.GetRenderTarget();
-    
+/*
+    BackBuffer &backBuffer = m_swapChainManager.GetCurrentBackBuffer();
+    DescriptorHeap &backBufferDescriptorHeap = m_swapChainManager.GetDescriptorHeap();
+    Resource &backBufferRenderTarget = backBuffer.GetRenderTarget();
+
     HRESULT res = backBufferCommandAllocator->Reset();
     if (FAILED(res))
     {
@@ -290,6 +218,7 @@ void DX12Renderer::Render()
 
         // TODO: EXECUTE COMMAND LISTS :)
         
+        mCommandQueue.AppendCommandList(m_commandList);
         //mCommandQueue.ExecuteCommandLists({mCommandList});
     }*/
 }
