@@ -248,9 +248,8 @@ std::vector<BackBuffer> DX12RendererSetup::CreateBackBuffers(const Device& pDevi
         pDevice->CreateRenderTargetView(backBufferRenderTarget.GetRaw(), nullptr, rtvHandle);
         /* ---------------------------------------------------------------------------------------- */
 
-        CommandAllocator commandAllocator = CreateCommandAllocator(pDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
         
-        backBuffers.push_back(BackBuffer(backBufferRenderTarget, commandAllocator));
+        backBuffers.push_back(BackBuffer(backBufferRenderTarget));
 
         rtvHandle.Offset(static_cast<std::int32_t>(pRenderTargetDescriptorSize));
     }
@@ -270,8 +269,6 @@ CommandList DX12RendererSetup::CreateCommandList(const Device& device, const Com
 {
     winrt::com_ptr<ID3D12GraphicsCommandList6> commandList;
     DXUtils::ThrowIfFailed(device->CreateCommandList(0, type, commandAllocator.GetRaw(), nullptr, IID_PPV_ARGS(&commandList)));
-
-    DXUtils::ThrowIfFailed(commandList->Close());
 
     return CommandList(commandList);
 }

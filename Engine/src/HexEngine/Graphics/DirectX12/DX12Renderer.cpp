@@ -1,5 +1,6 @@
 #include "DX12Renderer.hpp"
 
+#include <DirectXMesh.h>
 #include <print>
 #include <HexEngine/Utils/DirectXUtils.hpp>
 #include <HexEngine/Graphics/DirectX12/DX12RendererSetup.hpp>
@@ -9,6 +10,26 @@
 #endif
 
 using namespace HexEngine::Graphics::DirectX12;
+
+struct VertexPosColor
+{
+    DirectX::XMFLOAT3 Position;
+    DirectX::XMFLOAT3 Color;
+};
+
+static VertexPosColor g_Vertices[8] = {
+    { DirectX::XMFLOAT3( -1.0f, -1.0f, -1.0f ), DirectX::XMFLOAT3( 0.0f, 0.0f, 0.0f ) },  // 0
+    { DirectX::XMFLOAT3( -1.0f, 1.0f, -1.0f ), DirectX::XMFLOAT3( 0.0f, 1.0f, 0.0f ) },   // 1
+    { DirectX::XMFLOAT3( 1.0f, 1.0f, -1.0f ), DirectX::XMFLOAT3( 1.0f, 1.0f, 0.0f ) },    // 2
+    { DirectX::XMFLOAT3( 1.0f, -1.0f, -1.0f ), DirectX::XMFLOAT3( 1.0f, 0.0f, 0.0f ) },   // 3
+    { DirectX::XMFLOAT3( -1.0f, -1.0f, 1.0f ), DirectX::XMFLOAT3( 0.0f, 0.0f, 1.0f ) },   // 4
+    { DirectX::XMFLOAT3( -1.0f, 1.0f, 1.0f ), DirectX::XMFLOAT3( 0.0f, 1.0f, 1.0f ) },    // 5
+    { DirectX::XMFLOAT3( 1.0f, 1.0f, 1.0f ), DirectX::XMFLOAT3( 1.0f, 1.0f, 1.0f ) },     // 6
+    { DirectX::XMFLOAT3( 1.0f, -1.0f, 1.0f ), DirectX::XMFLOAT3( 1.0f, 0.0f, 1.0f ) }     // 7
+};
+
+static WORD g_Indices[36] = { 0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 4, 5, 1, 4, 1, 0,
+                               3, 2, 6, 3, 6, 7, 1, 5, 6, 1, 6, 2, 4, 0, 3, 4, 3, 7 };
 
 DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
 {
@@ -24,22 +45,121 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
         throw std::runtime_error("Mesh Shader support is required but not available on this device.");
     }
     
-    mDirectCommandQueue = DX12RendererSetup::CreateCommandQueue(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
     mCopyCommandQueue = DX12RendererSetup::CreateCommandQueue(mDevice, D3D12_COMMAND_LIST_TYPE_COPY);
+    mCopyCommandAllocator = DX12RendererSetup::CreateCommandAllocator(mDevice, D3D12_COMMAND_LIST_TYPE_COPY);
+    mCopyCommandList = DX12RendererSetup::CreateCommandList(mDevice, mCopyCommandAllocator, D3D12_COMMAND_LIST_TYPE_COPY);
+    
+    mDirectCommandQueue = DX12RendererSetup::CreateCommandQueue(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    mDirectCommandAllocator = DX12RendererSetup::CreateCommandAllocator(mDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    mDirectCommandList = DX12RendererSetup::CreateCommandList(mDevice, mDirectCommandAllocator, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    
     mComputeCommandQueue = DX12RendererSetup::CreateCommandQueue(mDevice, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+    mComputeCommandAllocator = DX12RendererSetup::CreateCommandAllocator(mDevice, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+    mComputeCommandList = DX12RendererSetup::CreateCommandList(mDevice, mComputeCommandAllocator, D3D12_COMMAND_LIST_TYPE_COMPUTE);
     
     mSwapChainManager = DX12RendererSetup::CreateSwapChainManager(window, mDevice, mDirectCommandQueue, mNumFrames);
-
-    BackBuffer backBuffer = mSwapChainManager.GetBackBufferAt(0);
-    CommandAllocator commandAllocator = backBuffer.GetCommandAllocator();
-    
-    mCommandList = DX12RendererSetup::CreateCommandList(mDevice, commandAllocator, D3D12_COMMAND_LIST_TYPE_DIRECT);
     mFence = DX12RendererSetup::CreateFence(mDevice);
 
     #if defined(_DEBUG)
     mImGuiDescriptorHeap = DX12RendererSetup::CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, mNumFrames);
     HexEngine::Graphics::UI::ImGuiTool::Initialize(window, mDevice, mDirectCommandQueue, mImGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
     #endif
+    
+    
+    
+    
+    
+    
+    // CREATE VERTEX BUFFER
+    CD3DX12_HEAP_PROPERTIES vertexBufferHeapProps = CD3DX12_HEAP_PROPERTIES {D3D12_HEAP_TYPE_DEFAULT};
+    
+    CD3DX12_RESOURCE_DESC vertexBufferResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(_countof(g_Vertices) * sizeof(VertexPosColor), D3D12_RESOURCE_FLAG_NONE); 
+    
+    winrt::com_ptr<ID3D12Resource> vertexBuffer {nullptr};
+    DirectXUtils::ThrowIfFailed(
+        mDevice->CreateCommittedResource(
+            &vertexBufferHeapProps, D3D12_HEAP_FLAG_NONE,
+            &vertexBufferResourceDesc, D3D12_RESOURCE_STATE_COMMON, nullptr,
+            IID_PPV_ARGS(&vertexBuffer)
+        )
+    );
+    
+    CD3DX12_HEAP_PROPERTIES vertexIntermediaryBufferHeapProps = CD3DX12_HEAP_PROPERTIES{D3D12_HEAP_TYPE_UPLOAD};
+    
+    CD3DX12_RESOURCE_DESC vertexIntermediaryBufferResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(_countof(g_Vertices) * sizeof(VertexPosColor));
+    
+    winrt::com_ptr<ID3D12Resource> vertexIntermediaryBuffer {nullptr};
+    DirectXUtils::ThrowIfFailed(
+        mDevice->CreateCommittedResource(
+            &vertexIntermediaryBufferHeapProps, D3D12_HEAP_FLAG_NONE,
+            &vertexIntermediaryBufferResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+            IID_PPV_ARGS(&vertexIntermediaryBuffer)
+        )    
+    );
+    
+    D3D12_SUBRESOURCE_DATA vertexSubresourceData 
+    {
+        .pData = g_Vertices,
+        .RowPitch = _countof(g_Vertices) * sizeof(VertexPosColor),
+        .SlicePitch = _countof(g_Vertices) * sizeof(VertexPosColor),
+    };
+    
+    CD3DX12_RESOURCE_BARRIER vertexBufferBarrier = CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+    mCopyCommandList->ResourceBarrier(1, &vertexBufferBarrier);
+    
+    UpdateSubresources(mCopyCommandList.GetRaw(), vertexBuffer.get(), vertexIntermediaryBuffer.get(), 0, 0, 1, &vertexSubresourceData);
+    
+    
+    
+    // CREATE INDEX BUFFER
+    CD3DX12_HEAP_PROPERTIES indexBufferHeapProps = CD3DX12_HEAP_PROPERTIES {D3D12_HEAP_TYPE_DEFAULT};
+    
+    CD3DX12_RESOURCE_DESC indexBufferResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(_countof(g_Vertices) * 2, D3D12_RESOURCE_FLAG_NONE); 
+    
+    winrt::com_ptr<ID3D12Resource> indexBuffer {nullptr};
+    DirectXUtils::ThrowIfFailed(
+        mDevice->CreateCommittedResource(
+            &indexBufferHeapProps, D3D12_HEAP_FLAG_NONE,
+            &indexBufferResourceDesc, D3D12_RESOURCE_STATE_COMMON, nullptr,
+            IID_PPV_ARGS(&indexBuffer)
+        )
+    );
+    
+    CD3DX12_HEAP_PROPERTIES indexIntermediaryBufferHeapProps = CD3DX12_HEAP_PROPERTIES{D3D12_HEAP_TYPE_UPLOAD};
+    
+    CD3DX12_RESOURCE_DESC indexIntermediaryBufferResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(_countof(g_Vertices) * 2);
+    
+    winrt::com_ptr<ID3D12Resource> indexIntermediaryBuffer {nullptr};
+    DirectXUtils::ThrowIfFailed(
+        mDevice->CreateCommittedResource(
+            &indexIntermediaryBufferHeapProps, D3D12_HEAP_FLAG_NONE,
+            &indexIntermediaryBufferResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+            IID_PPV_ARGS(&indexIntermediaryBuffer)
+        )    
+    );
+    
+    D3D12_SUBRESOURCE_DATA indexSubresourceData 
+    {
+        .pData = g_Indices,
+        .RowPitch = _countof(g_Vertices) * 2,
+        .SlicePitch = _countof(g_Vertices) * 2
+    };
+    
+    CD3DX12_RESOURCE_BARRIER indexBufferBarrier = CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer.get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+    mCopyCommandList->ResourceBarrier(1, &indexBufferBarrier);
+    
+    UpdateSubresources(mCopyCommandList.GetRaw(), indexBuffer.get(), indexIntermediaryBuffer.get(), 0, 0, 1, &indexSubresourceData);
+    
+    DirectXUtils::ThrowIfFailed(mCopyCommandList->Close());
+    
+    mCopyCommandQueue->ExecuteCommandLists(1, std::vector<ID3D12CommandList*>({mCopyCommandList.GetRaw()}).data());
+    
+    D3D12_INPUT_ELEMENT_DESC inputLayout[]
+    {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 1 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 1 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 1 }
+    };
 }
 
 DX12Renderer::~DX12Renderer()
@@ -84,25 +204,26 @@ void DX12Renderer::Draw()
 
 void DX12Renderer::Render()
 {
+ 
     
     
-    // CREATE VERTEX BUFFER
-    CD3DX12_HEAP_PROPERTIES vertexBufferHeapProps
-    {
-        .type = D3D12_HEAP_TYPE_DEFAULT
-    };
-    
-    CD3DX12_RESOURCE_DESC::Buffer() 
-        
-    static_cast<void>(
-        mDevice->CreateCommittedResource(
-            vertexBufferHeapProps, D3D12_HEAP_FLAG_NONE,
-            
-        )
-    );
-    winrt::com_ptr<ID3D12Resource> vertexBuffer = mCommandList->CopyVertexBuffer();
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /*
     BackBuffer& backBuffer = mSwapChainManager.GetCurrentBackBuffer();
     DescriptorHeap& backBufferDescriptorHeap = mSwapChainManager.GetDescriptorHeap();
     CommandAllocator& backBufferCommandAllocator = backBuffer.GetCommandAllocator();
@@ -170,5 +291,5 @@ void DX12Renderer::Render()
         // TODO: EXECUTE COMMAND LISTS :)
         
         //mCommandQueue.ExecuteCommandLists({mCommandList});
-    }
+    }*/
 }

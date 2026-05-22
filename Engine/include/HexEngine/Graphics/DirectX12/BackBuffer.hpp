@@ -8,7 +8,7 @@ class BackBuffer
 {
 public:
     BackBuffer() = default;
-    explicit BackBuffer(const Resource& renderTarget, const CommandAllocator& commandAllocator);
+    explicit BackBuffer(const Resource& renderTarget);
     ~BackBuffer() = default;
     BackBuffer(const BackBuffer& other) = default;
     BackBuffer& operator=(const BackBuffer& other) = default;
@@ -19,9 +19,6 @@ public:
     Resource& GetRenderTarget();
 
     [[maybe_unused]] [[nodiscard]]
-    CommandAllocator& GetCommandAllocator();
-
-    [[maybe_unused]] [[nodiscard]]
     std::uint64_t GetFenceValue() const;
 
     [[maybe_unused]]
@@ -29,7 +26,6 @@ public:
 
 private:
     Resource m_renderTarget {};
-    CommandAllocator m_commandAllocator {};
     std::uint64_t m_fenceValue {0};
     
 };
@@ -37,11 +33,6 @@ private:
 inline Resource& BackBuffer::GetRenderTarget() 
 {
     return m_renderTarget;
-}
-
-inline CommandAllocator& BackBuffer::GetCommandAllocator()
-{
-    return m_commandAllocator;
 }
 
 inline std::uint64_t BackBuffer::GetFenceValue() const

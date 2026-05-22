@@ -16,6 +16,8 @@ namespace HexEngine::Graphics::DirectX12
         CommandQueue& operator=(const CommandQueue& other) = default;
         CommandQueue(CommandQueue&& other) noexcept = default;
         CommandQueue& operator=(CommandQueue&& other) noexcept = default;
+        
+        winrt::com_ptr<ID3D12CommandQueue> operator->() const;
 
         [[maybe_unused]] [[nodiscard]]
         winrt::com_ptr<ID3D12CommandQueue> GetCOM() const;

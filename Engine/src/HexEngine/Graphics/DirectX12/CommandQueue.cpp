@@ -7,7 +7,12 @@ CommandQueue::CommandQueue(const winrt::com_ptr<ID3D12CommandQueue>& commandQueu
     mCommandQueue = commandQueue;
 }
 
-void CommandQueue::ExecuteCommandLists(std::vector<CommandList>& pCommandList) const
+winrt::com_ptr<ID3D12CommandQueue> CommandQueue::operator->() const
+{
+    return mCommandQueue;
+}
+
+void CommandQueue::ExecuteCommandLists([[maybe_unused]] std::vector<CommandList>& pCommandList) const
 {
     // TODO: FIX THIS :)
     

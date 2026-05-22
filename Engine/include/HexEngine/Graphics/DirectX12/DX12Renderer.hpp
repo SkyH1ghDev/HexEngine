@@ -34,13 +34,25 @@ namespace HexEngine::Graphics::DirectX12
 #endif
     
         Device mDevice {};
-        CommandQueue mDirectCommandQueue {};
+        
+        // COPY
         CommandQueue mCopyCommandQueue {};
+        CommandAllocator mCopyCommandAllocator {};
+        CommandList mCopyCommandList {};
+        
+        // DIRECT
+        CommandQueue mDirectCommandQueue {};
+        CommandAllocator mDirectCommandAllocator {};
+        CommandList mDirectCommandList {};
+        
+        // COMPUTE
         CommandQueue mComputeCommandQueue {};
-        CommandList mCommandList {};
+        CommandAllocator mComputeCommandAllocator {};
+        CommandList mComputeCommandList {};
+        
         SwapChainManager mSwapChainManager {};
         Fence mFence {};
-
+        
         //winrt::com_ptr<ID3D12Device2> m_device;
         //MW::ComPtr<ID3D12CommandQueue> m_commandQueue;
         // MW::ComPtr<ID3D12DescriptorHeap> m_backBufferDescriptorHeap;
