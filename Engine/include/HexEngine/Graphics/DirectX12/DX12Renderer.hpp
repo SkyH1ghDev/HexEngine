@@ -7,6 +7,8 @@
 #include <HexEngine/Graphics/DirectX12/SwapChainManager.hpp>
 #include <HexEngine/Graphics/DirectX12/CommandQueue.hpp>
 #include <HexEngine/Graphics/DirectX12/CommandList.hpp>
+#include <HexEngine/Assets/Mesh/MeshLoader.hpp>
+#include <HexEngine/Assets/Shader/ShaderLoader.hpp>
 
 namespace DX = DirectX;
 namespace HexEngine::Graphics::DirectX12
@@ -39,6 +41,19 @@ namespace HexEngine::Graphics::DirectX12
         SwapChainManager m_swapChainManager {};
         CommandList m_commandList {};
         Fence m_fence {};
+
+		Assets::MeshData mMeshMaxwell {};
+		Assets::MeshData mMeshWhiskers {};
+
+		Assets::RootSignatureData mMeshRootSignature {};
+		Assets::RootSignatureData mGraphicsRootSignature {};
+
+		Assets::PipelineStateData mMeshPipelineState {};
+		Assets::PipelineStateData mGraphicsPipelineState {};
+        
+		Assets::ShaderData mVShader {};
+		Assets::ShaderData mMShader {};
+		Assets::ShaderData mPShader {};
 
         //winrt::com_ptr<ID3D12Device2> m_device;
         //MW::ComPtr<ID3D12CommandQueue> m_commandQueue;

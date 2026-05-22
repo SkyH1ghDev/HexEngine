@@ -1,6 +1,7 @@
 #include "ShaderLoader.hpp"
 #include <fstream>
 
+using namespace winrt;
 using namespace DirectX;
 using namespace DirectXUtils;
 using namespace HexEngine::Assets;

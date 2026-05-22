@@ -35,6 +35,29 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
         HexEngine::Graphics::UI::ImGuiTool::Initialize(window, m_device, m_commandQueue, m_imGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
     }
     #endif
+
+	// Load Assets
+    {
+		// Load Meshes
+        mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Maxwell.obj");
+        Assets::MeshLoader::UploadMeshResources(m_device, m_commandQueue, commandAllocator, m_commandList, mMeshMaxwell);
+
+        mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Whiskers.obj");
+        Assets::MeshLoader::UploadMeshResources(m_device, m_commandQueue, commandAllocator, m_commandList, mMeshWhiskers);
+
+		// Load Shaders
+        //mVShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/vs_VertexShader.cso");
+        mMShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/ms_MeshShader.cso");
+        mPShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/ps_PixelShader.cso");
+
+		// Create Root Signatures
+		mMeshRootSignature = Assets::ShaderLoader::CreateRootSignature(m_device, mMShader);
+		//mGraphicsRootSignature = Assets::ShaderLoader::CreateRootSignature(m_device, mVShader);
+
+		// Create Pipeline States
+		mMeshPipelineState = Assets::ShaderLoader::CreateMeshPipelineState(m_device, mMeshRootSignature, nullptr, &mMShader, &mPShader);
+		//mGraphicsPipelineState = Assets::ShaderLoader::CreateGraphicsPipelineState(m_device, mGraphicsRootSignature, Assets::MeshLoader::c_DefualtElementDesc, 3, &mVShader, &mPShader);
+    }
 }
 
 DX12Renderer::~DX12Renderer()
@@ -83,14 +106,13 @@ void DX12Renderer::Draw()
     m_fence.WaitForValue(backBuffer.GetFenceValue());   
 }
 
-
 void DX12Renderer::Render()
 {
-    BackBuffer& backBuffer = m_swapChainManager.GetCurrentBackBuffer();
-    DescriptorHeap& backBufferDescriptorHeap = m_swapChainManager.GetDescriptorHeap();
-    CommandAllocator& backBufferCommandAllocator = backBuffer.GetCommandAllocator();
-    Resource& backBufferRenderTarget = backBuffer.GetRenderTarget();
-    
+    BackBuffer &backBuffer = m_swapChainManager.GetCurrentBackBuffer();
+    DescriptorHeap &backBufferDescriptorHeap = m_swapChainManager.GetDescriptorHeap();
+    CommandAllocator &backBufferCommandAllocator = backBuffer.GetCommandAllocator();
+    Resource &backBufferRenderTarget = backBuffer.GetRenderTarget();
+
     HRESULT res = backBufferCommandAllocator->Reset();
     if (FAILED(res))
     {
