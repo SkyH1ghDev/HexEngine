@@ -8,11 +8,11 @@
 #include <DirectXMesh.h>
 #include <utils/WaveFrontReader.h>
 
+using namespace winrt;
+using namespace DirectX;
 using namespace DirectXUtils;
 using namespace HexEngine::Assets;
-using namespace DirectX;
-using namespace winrt;
-
+using namespace HexEngine::Graphics::DirectX12;
 
 static void ComputeBoundingCone(
 	XMVECTOR &outAxis, 
@@ -161,10 +161,10 @@ constexpr T DivRoundUp(T num, U denom)
 }
 
 void MeshLoader::UploadMeshResources(
-	com_ptr<ID3D12Device9> device, 
-	com_ptr<ID3D12CommandQueue> cmdQueue, 
-	com_ptr<ID3D12CommandAllocator> cmdAlloc, 
-	com_ptr<ID3D12GraphicsCommandList> cmdList, 
+	Device &pDevice,
+	CommandQueue &pCmdQueue,
+	CommandAllocator &pCmdAlloc,
+	CommandList &pCmdList,
 	MeshData &meshData)
 {
 	MeshResources &res = meshData.resources;
@@ -179,13 +179,13 @@ void MeshLoader::UploadMeshResources(
 	auto meshInfoDesc			= CD3DX12_RESOURCE_DESC::Buffer(sizeof(MeshInfo));
 
 	auto defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.vertexBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &indexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.indexBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletVerticesBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletTrianglesBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletCullDataBuffer)));
-	ThrowIfFailed(device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshInfoBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.vertexBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &indexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.indexBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletVerticesBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletTrianglesBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshletCullDataBuffer)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&res.meshInfoBuffer)));
 
 	// Create views
 	res.indexBufferView.BufferLocation = res.indexBuffer->GetGPUVirtualAddress();
@@ -206,13 +206,13 @@ void MeshLoader::UploadMeshResources(
 	com_ptr<ID3D12Resource> meshInfoUpload;
 
 	auto uploadHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &indexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&indexUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletVertexUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletTriangleUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletCullDataUpload)));
-	ThrowIfFailed(device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshInfoUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &indexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&indexUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletVertexUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletTriangleUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletCullDataUpload)));
+	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshInfoUpload)));
 
 	// Map & copy memory to upload heap
 	{
@@ -271,35 +271,35 @@ void MeshLoader::UploadMeshResources(
 	}
 
 	// Populate our command list
-	cmdList->Reset(cmdAlloc.get(), nullptr);
+	pCmdList->Reset(pCmdAlloc.GetRaw(), nullptr);
 
 	D3D12_RESOURCE_BARRIER postCopyBarriers[7]{};
 
-	cmdList->CopyResource(res.vertexBuffer.get(), vertexUpload.get());
+	pCmdList->CopyResource(res.vertexBuffer.get(), vertexUpload.get());
 	postCopyBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(res.vertexBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->CopyResource(res.indexBuffer.get(), indexUpload.get());
+	pCmdList->CopyResource(res.indexBuffer.get(), indexUpload.get());
 	postCopyBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(res.indexBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->CopyResource(res.meshletBuffer.get(), meshletUpload.get());
+	pCmdList->CopyResource(res.meshletBuffer.get(), meshletUpload.get());
 	postCopyBarriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshletBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->CopyResource(res.meshletVerticesBuffer.get(), meshletVertexUpload.get());
+	pCmdList->CopyResource(res.meshletVerticesBuffer.get(), meshletVertexUpload.get());
 	postCopyBarriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshletVerticesBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->CopyResource(res.meshletTrianglesBuffer.get(), meshletTriangleUpload.get());
+	pCmdList->CopyResource(res.meshletTrianglesBuffer.get(), meshletTriangleUpload.get());
 	postCopyBarriers[4] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshletTrianglesBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->CopyResource(res.meshletCullDataBuffer.get(), meshletCullDataUpload.get());
+	pCmdList->CopyResource(res.meshletCullDataBuffer.get(), meshletCullDataUpload.get());
 	postCopyBarriers[5] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshletCullDataBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	cmdList->CopyResource(res.meshInfoBuffer.get(), meshInfoUpload.get());
+	pCmdList->CopyResource(res.meshInfoBuffer.get(), meshInfoUpload.get());
 	postCopyBarriers[6] = CD3DX12_RESOURCE_BARRIER::Transition(res.meshInfoBuffer.get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
-	cmdList->ResourceBarrier(ARRAYSIZE(postCopyBarriers), postCopyBarriers);
+	pCmdList->ResourceBarrier(ARRAYSIZE(postCopyBarriers), postCopyBarriers);
 
-	ThrowIfFailed(cmdList->Close());
+	ThrowIfFailed(pCmdList->Close());
 
-	ID3D12CommandList *ppCommandLists[] = { cmdList.get()};
-	cmdQueue->ExecuteCommandLists(1, ppCommandLists);
+	ID3D12CommandList *ppCommandLists[] = { pCmdList.GetRaw()};
+	pCmdQueue.GetCOM()->ExecuteCommandLists(1, ppCommandLists);
 }
