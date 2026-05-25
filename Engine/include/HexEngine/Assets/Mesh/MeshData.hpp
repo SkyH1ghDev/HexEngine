@@ -25,6 +25,7 @@ namespace HexEngine::Assets
 		std::uint32_t i0 : 10 { 0 };
 		std::uint32_t i1 : 10 { 0 };
 		std::uint32_t i2 : 10 { 0 };
+		std::uint32_t _ : 2 { 0 };
 	};
 
 	struct MeshletCullData

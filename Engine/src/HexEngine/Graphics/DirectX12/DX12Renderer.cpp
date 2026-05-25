@@ -90,8 +90,9 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 	// Load Assets
 	{
 		// Load Meshes
+		//mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Maxwell.obj");
 		//mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/MaxwellHighRes.obj");
-		mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Maxwell.obj");
+		mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Character1.obj");
 		Assets::MeshLoader::UploadMeshResources(mDevice, mDirectCommandQueue, mDirectCommandAllocator, mDirectCommandList, mMeshMaxwell);
 
 		mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Whiskers.obj");
@@ -151,14 +152,19 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 			DirectX::XMFLOAT3(0.0f, 1.5f, -3.0f),	// position
 			DirectX::XMFLOAT3(0.0f, -0.5f, 1.0f),	// forward
 			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),	// up
-			DirectX::XM_PIDIV2 * 0.7f,				// fovY
+			DirectX::XM_PIDIV2 * 0.3f,				// fovY
 			1280.0f / 720.0f,						// aspectRatio
 			0.01f,									// nearZ
 			20.0f									// farZ
 		);
 
+		DirectX::XMMATRIX objMat = DirectX::XMMatrixIdentity();
+
+		objMat += DirectX::XMMatrixTranslation(0.0f, -10.0f, 0.0f);
+		objMat *= DirectX::XMMatrixScaling(0.1f, 0.1f, 0.1f);
+
 		DirectX::XMFLOAT4X4A objMatrix{};
-		DirectX::XMStoreFloat4x4(&objMatrix, DirectX::XMMatrixIdentity());
+		DirectX::XMStoreFloat4x4(&objMatrix, objMat);
 
 		mObjects.emplace_back(mDevice, objMatrix, "Maxwell", &mMeshMaxwell);
 		mObjects.emplace_back(mDevice, objMatrix, "Whiskers", &mMeshWhiskers);
