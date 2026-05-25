@@ -202,7 +202,7 @@ void MeshLoader::UploadMeshResources(
 	auto vertexDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.vertices.size() * sizeof(VertexData));
 	auto indexDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.indices.size() * sizeof(meshData.indices[0]));
 	auto meshletDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshlets.size() * sizeof(meshData.meshlets[0]));
-	auto meshletVertexDesc = CD3DX12_RESOURCE_DESC::Buffer(DivRoundUp(meshData.meshletVertices.size(), sizeof(meshData.meshletVertices[0])) * sizeof(meshData.meshletVertices[0]));
+	auto meshletVertexDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshletVertices.size() * sizeof(meshData.meshletVertices[0]));
 	auto meshletTriangleDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshletTriangles.size() * sizeof(meshData.meshletTriangles[0]));
 	auto meshletCullDataDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshlets.size() * sizeof(MeshletCullData));
 
