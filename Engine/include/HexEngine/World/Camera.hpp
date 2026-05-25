@@ -4,6 +4,17 @@
 
 namespace HexEngine::World
 {
+	struct CameraParams
+	{
+		DirectX::XMFLOAT3 position;
+		DirectX::XMFLOAT3 forward;
+		DirectX::XMFLOAT3 up;
+		float fovY;
+		float aspectRatio;
+		float nearZ;
+		float farZ;
+	};
+
 	class Camera
 	{
 	public:
@@ -16,6 +27,7 @@ namespace HexEngine::World
 
 		[[nodiscard]] const DirectX::XMFLOAT4X4A &GetView() const		{ return mView;			}
 		[[nodiscard]] const DirectX::XMFLOAT4X4A &GetProjection() const { return mProjection;	}
+		[[nodiscard]] const CameraParams &GetCameraParams() const		{ return mCamParams;	}
 
 		void SetView(DirectX::XMFLOAT4X4A mat)			{ mView = mat;			}
 		void SetProjection(DirectX::XMFLOAT4X4A mat)	{ mProjection = mat;	}
@@ -26,7 +38,8 @@ namespace HexEngine::World
 					   float nearZ, float farZ);
 
 	private:
-		DirectX::XMFLOAT4X4A mView;
-		DirectX::XMFLOAT4X4A mProjection;
+		DirectX::XMFLOAT4X4A mView {};
+		DirectX::XMFLOAT4X4A mProjection {};
+		CameraParams mCamParams{};
 	};
 }

@@ -54,13 +54,6 @@ void ImGuiTool::Start()
 
 void ImGuiTool::Run()
 {
-	// Windows
-	//ImGui::ShowDemoWindow();
-
-	ImGui::Begin("Bingus");
-	ImGui::Text("Hello World");
-	ImGui::End();	
-	
 	ImGui::Render();
 }
 

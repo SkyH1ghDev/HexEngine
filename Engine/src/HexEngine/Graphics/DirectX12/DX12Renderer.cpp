@@ -150,7 +150,7 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 			DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f),	// position
 			DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),	// forward
 			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),	// up
-			45.0f,									// fovY
+			DirectX::XM_PIDIV2,						// fovY
 			1280.0f / 720.0f,						// aspectRatio
 			0.01f,									// nearZ
 			20.0f									// farZ
@@ -196,6 +196,41 @@ void DX12Renderer::Draw()
 	// ImGui
 #if defined(_DEBUG)
 	HexEngine::Graphics::UI::ImGuiTool::Start();
+
+	ImGui::Begin("Renderer");
+	{
+		ImGui::Checkbox("Use Mesh Shader", &mUseMeshShader);
+
+		ImGui::Text("Camera Parameters:");
+		{
+			World::CameraParams camParams = mCamera.GetCameraParams();
+
+			bool changed = false;
+
+			changed |= ImGui::DragFloat3("Position", &camParams.position.x, 0.01f);
+			changed |= ImGui::DragFloat3("Forward", &camParams.forward.x, 0.01f);
+			changed |= ImGui::DragFloat3("Up", &camParams.up.x, 0.01f);
+			changed |= ImGui::DragFloat("FOV Y", &camParams.fovY, 0.1f);
+			changed |= ImGui::DragFloat("Aspect Ratio", &camParams.aspectRatio, 0.01f);
+			changed |= ImGui::DragFloat("Near Z", &camParams.nearZ, 0.01f);
+			changed |= ImGui::DragFloat("Far Z", &camParams.farZ, 0.01f);
+
+			if (changed)
+			{
+				mCamera.SetCamera(
+					camParams.position,
+					camParams.forward,
+					camParams.up,
+					camParams.fovY,
+					camParams.aspectRatio,
+					camParams.nearZ,
+					camParams.farZ
+				);
+			}
+		}
+	}
+	ImGui::End();
+
 	HexEngine::Graphics::UI::ImGuiTool::Run();
 #endif
 
@@ -284,34 +319,7 @@ void DX12Renderer::Render()
 		mDirectCommandList->RSSetViewports(1, &mViewport);
 		mDirectCommandList->RSSetScissorRects(1, &mScissorRect);
 
-		if (true)
-		{
-			mDirectCommandList->SetPipelineState(mGraphicsPipelineState.pipelineState.get());
-			mDirectCommandList->SetGraphicsRootSignature(mGraphicsRootSignature.rootSignature.get());
-
-			mDirectCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-			for (auto &object : mObjects)
-			{
-				auto *meshData = static_cast<Assets::MeshData *>(object.GetMeshPtr());
-				if (!meshData || meshData->meshlets.empty())
-				{
-					continue;
-				}
-
-				const auto &resources = meshData->resources;
-
-				mDirectCommandList->SetGraphicsRootConstantBufferView(
-					0,
-					object.GetWorldBuffer().GetRaw()->GetGPUVirtualAddress()
-				);
-
-				mDirectCommandList->IASetVertexBuffers(0, 1, &resources.vertexBufferView);
-				mDirectCommandList->IASetIndexBuffer(&resources.indexBufferView);
-				mDirectCommandList->DrawIndexedInstanced(resources.indexBufferView.SizeInBytes / sizeof(std::uint16_t), 1, 0, 0, 0);
-			}
-		}
-		else
+		if (mUseMeshShader)
 		{
 			mDirectCommandList->SetPipelineState(mMeshPipelineState.pipelineState.get());
 			mDirectCommandList->SetGraphicsRootSignature(mMeshRootSignature.rootSignature.get());
@@ -344,6 +352,33 @@ void DX12Renderer::Render()
 				mDirectCommandList->SetGraphicsRootShaderResourceView(5, resources.meshletTrianglesBuffer->GetGPUVirtualAddress());
 
 				mDirectCommandList->DispatchMesh(static_cast<std::uint32_t>(meshData->meshlets.size()), 1, 1);
+			}
+		}
+		else
+		{
+			mDirectCommandList->SetPipelineState(mGraphicsPipelineState.pipelineState.get());
+			mDirectCommandList->SetGraphicsRootSignature(mGraphicsRootSignature.rootSignature.get());
+
+			mDirectCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			for (auto &object : mObjects)
+			{
+				auto *meshData = static_cast<Assets::MeshData *>(object.GetMeshPtr());
+				if (!meshData || meshData->meshlets.empty())
+				{
+					continue;
+				}
+
+				const auto &resources = meshData->resources;
+
+				mDirectCommandList->SetGraphicsRootConstantBufferView(
+					0,
+					object.GetWorldBuffer().GetRaw()->GetGPUVirtualAddress()
+				);
+
+				mDirectCommandList->IASetVertexBuffers(0, 1, &resources.vertexBufferView);
+				mDirectCommandList->IASetIndexBuffer(&resources.indexBufferView);
+				mDirectCommandList->DrawIndexedInstanced(resources.indexBufferView.SizeInBytes / sizeof(std::uint16_t), 1, 0, 0, 0);
 			}
 		}
 	}
