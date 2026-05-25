@@ -5,13 +5,14 @@
     float2 UV			: TEXCOORD;
 };
 
-struct VertexOut 
+struct VertexOut
 {
-    float4 Position     : POSITION;
-    float3 Normal       : NORMAL;
-    float2 UV           : TEXCOORD;
-    uint lmao           : COLOR0;
+	float4 Position     : SV_Position;
+	float3 Normal       : NORMAL;
+	float2 UV           : TEXCOORD;
+	uint lmao           : COLOR0;
 };
+
 
 struct Constants
 {
@@ -27,7 +28,7 @@ VertexOut main(VertexIn pInput)
 {
     VertexOut output;
     
-    output.Position = mul(bConstants.WorldViewProj, pInput.Position);;
+    output.Position = mul(bConstants.WorldViewProj, float4(pInput.Position, 1.0f));
     output.Normal = pInput.Normal;
     output.UV = pInput.UV;
     output.lmao = 0;

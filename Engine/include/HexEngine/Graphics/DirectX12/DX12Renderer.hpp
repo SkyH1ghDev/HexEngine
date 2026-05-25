@@ -9,6 +9,8 @@
 #include <HexEngine/Graphics/DirectX12/CommandList.hpp>
 #include <HexEngine/Assets/Mesh/MeshLoader.hpp>
 #include <HexEngine/Assets/Shader/ShaderLoader.hpp>
+#include <HexEngine/World/Camera.hpp>
+#include <HexEngine/World/Object.hpp>
 
 namespace HexEngine::Graphics::DirectX12
 {
@@ -22,6 +24,7 @@ namespace HexEngine::Graphics::DirectX12
         DX12Renderer(DX12Renderer&& other) noexcept = default;
         DX12Renderer& operator=(DX12Renderer&& other) noexcept = default;
 
+		void Update();
         void Render();
         void Draw();
 
@@ -67,6 +70,9 @@ namespace HexEngine::Graphics::DirectX12
 		Assets::ShaderData mVShader {};
 		Assets::ShaderData mMShader {};
 		Assets::ShaderData mPShader {};
+
+		World::Camera mCamera{};
+		std::vector<World::Object> mObjects{};
 
         //winrt::com_ptr<ID3D12Device2> m_device;
         //MW::ComPtr<ID3D12CommandQueue> m_commandQueue;
