@@ -170,8 +170,6 @@ DX12Renderer::~DX12Renderer()
 	HexEngine::Graphics::UI::ImGuiTool::Shutdown();
 	#endif
 	
-	std::vector<BackBuffer> backBuffers = mSwapChainManager.GetBackBuffers();
-
 	mFence.Flush(std::numeric_limits<std::uint64_t>::max() - 1);
 }
 
