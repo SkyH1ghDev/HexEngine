@@ -15,7 +15,7 @@ namespace HexEngine::Graphics::DirectX12
     class DX12Renderer {
     public:
         DX12Renderer() = default;
-        DX12Renderer(const HexEngine::SDL::SDLWindow& window);
+        DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow);
         ~DX12Renderer();
         DX12Renderer(const DX12Renderer& other) = default;
         DX12Renderer& operator=(const DX12Renderer& other) = default;

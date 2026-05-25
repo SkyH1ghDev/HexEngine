@@ -18,29 +18,12 @@ public:
     [[maybe_unused]] [[nodiscard]]
     Resource& GetRenderTarget();
 
-    [[maybe_unused]] [[nodiscard]]
-    std::uint64_t GetFenceValue() const;
-
-    [[maybe_unused]]
-    void SetFenceValue(std::uint64_t fenceValue);
-
 private:
     Resource m_renderTarget {};
-    std::uint64_t m_fenceValue {0};
     
 };
 
 inline Resource& BackBuffer::GetRenderTarget() 
 {
     return m_renderTarget;
-}
-
-inline std::uint64_t BackBuffer::GetFenceValue() const
-{
-    return m_fenceValue;
-}
-
-inline void BackBuffer::SetFenceValue(std::uint64_t fenceValue)
-{
-    m_fenceValue = fenceValue;
 }

@@ -31,7 +31,7 @@ static VertexPosColor g_Vertices[8] = {
 static WORD g_Indices[36] = { 0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 4, 5, 1, 4, 1, 0,
                                3, 2, 6, 3, 6, 7, 1, 5, 6, 1, 6, 2, 4, 0, 3, 4, 3, 7 };
 
-DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
+DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 {
     #if defined(_DEBUG)
     mDebugInterface = DX12RendererSetup::CreateDebugLayer();
@@ -57,12 +57,12 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
     mComputeCommandAllocator = DX12RendererSetup::CreateCommandAllocator(mDevice, D3D12_COMMAND_LIST_TYPE_COMPUTE);
     mComputeCommandList = DX12RendererSetup::CreateCommandList(mDevice, mComputeCommandAllocator, D3D12_COMMAND_LIST_TYPE_COMPUTE);
     
-    mSwapChainManager = DX12RendererSetup::CreateSwapChainManager(window, mDevice, mDirectCommandQueue, mNumFrames);
+    mSwapChainManager = DX12RendererSetup::CreateSwapChainManager(pWindow, mDevice, mDirectCommandQueue, mNumFrames);
     mFence = DX12RendererSetup::CreateFence(mDevice);
 
     #if defined(_DEBUG)
     mImGuiDescriptorHeap = DX12RendererSetup::CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, mNumFrames);
-    HexEngine::Graphics::UI::ImGuiTool::Initialize(window, mDevice, mDirectCommandQueue, mImGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
+    HexEngine::Graphics::UI::ImGuiTool::Initialize(pWindow, mDevice, mDirectCommandQueue, mImGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
     #endif
     
     if (!DX12DeviceCapabilities::CheckMeshShaderSupport(mDevice))
@@ -82,17 +82,23 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& window)
         Assets::MeshLoader::UploadMeshResources(mDevice, mDirectCommandQueue, mDirectCommandAllocator, mDirectCommandList, mMeshWhiskers);
 
 		// Load Shaders
-        //mVShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/vs_VertexShader.cso");
+        mVShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/vs_VertexShader.cso");
         mMShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/ms_MeshShader.cso");
         mPShader = Assets::ShaderLoader::LoadShader("../../Build/target/Shader/cso/ps_PixelShader.cso");
 
 		// Create Root Signatures
 		mMeshRootSignature = Assets::ShaderLoader::CreateRootSignature(mDevice, mMShader);
-		//mGraphicsRootSignature = Assets::ShaderLoader::CreateRootSignature(m_device, mVShader);
+		mGraphicsRootSignature = Assets::ShaderLoader::CreateRootSignature(mDevice, mVShader);
 
 		// Create Pipeline States
 		mMeshPipelineState = Assets::ShaderLoader::CreateMeshPipelineState(mDevice, mMeshRootSignature, nullptr, &mMShader, &mPShader);
-		//mGraphicsPipelineState = Assets::ShaderLoader::CreateGraphicsPipelineState(m_device, mGraphicsRootSignature, Assets::MeshLoader::c_DefualtElementDesc, 3, &mVShader, &mPShader);
+        
+        CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+        winrt::com_ptr<ID3DBlob> rootSignatureBlob{ nullptr }; 
+        rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+        D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &rootSignatureBlob, nullptr);
+        
+		mGraphicsPipelineState = Assets::ShaderLoader::CreateGraphicsPipelineState(mDevice, mGraphicsRootSignature, Assets::MeshLoader::cDefaultElementDesc, 3, &mVShader, &mPShader);
     }
 }
 
@@ -104,10 +110,7 @@ DX12Renderer::~DX12Renderer()
     
     std::vector<BackBuffer> backBuffers = mSwapChainManager.GetBackBuffers();
 
-    for (BackBuffer backBuffer : backBuffers)
-    {
-        mFence.Flush(backBuffer.GetFenceValue());
-    }
+    mFence.Flush(std::numeric_limits<std::uint64_t>::max() - 1);
 }
 
 void DX12Renderer::Draw()
@@ -125,15 +128,12 @@ void DX12Renderer::Draw()
 
     mSwapChainManager.PresentFrame(mVSync);
 
-    BackBuffer& backBuffer = mSwapChainManager.GetCurrentBackBuffer();
-
-    std::uint64_t fenceValue = backBuffer.GetFenceValue();
-    fenceValue = mDirectCommandQueue.GPUSignal(mFence, fenceValue);
-    backBuffer.SetFenceValue(fenceValue);
+    std::uint64_t fenceValue = mDirectCommandQueue.GPUSignal(mFence, mFence.GetFenceValue());
+    mFence.SetFenceValue(fenceValue);
     
     mSwapChainManager.UpdateBackBufferIndex();
 
-    mFence.WaitForValue(backBuffer.GetFenceValue());   
+    mFence.WaitForValue(fenceValue);   
 }
 
 void DX12Renderer::Render()

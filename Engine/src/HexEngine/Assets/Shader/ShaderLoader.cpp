@@ -96,7 +96,7 @@ PipelineStateData HexEngine::Assets::ShaderLoader::CreateGraphicsPipelineState(
 {
 	PipelineStateData pipelineStateData;
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
 	psoDesc.pRootSignature = pRootSignature.rootSignature.get();
 
 	if (pVS) psoDesc.VS = { pVS->data.get(), pVS->size };

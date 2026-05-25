@@ -11,10 +11,10 @@ Fence::Fence(const winrt::com_ptr<ID3D12Fence1>& fence, const HANDLE& fenceEvent
     this->mFenceEventHandle = fenceEvent;
 }
 
-std::uint64_t Fence::Signal(std::uint64_t fenceValue) const
+std::uint64_t Fence::Signal(std::uint64_t pFenceValue) const
 {
-    DXUtils::ThrowIfFailed(mFence->Signal(++fenceValue));
-    return fenceValue;
+    DXUtils::ThrowIfFailed(mFence->Signal(++pFenceValue));
+    return pFenceValue;
 }
 
 void Fence::WaitForValue(std::uint64_t fenceValue, const std::chrono::milliseconds duration) const
