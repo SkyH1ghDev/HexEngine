@@ -90,6 +90,7 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 	// Load Assets
 	{
 		// Load Meshes
+		//mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/MaxwellHighRes.obj");
 		mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Maxwell.obj");
 		Assets::MeshLoader::UploadMeshResources(mDevice, mDirectCommandQueue, mDirectCommandAllocator, mDirectCommandList, mMeshMaxwell);
 

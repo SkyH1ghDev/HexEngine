@@ -83,8 +83,6 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 	// Load Wavefront OBJ
 	auto mesh = std::make_unique<DX::WaveFrontReader<uint16_t>>();
 
-	//std::string fullPath = std::filesystem::absolute(filePath).string();
-
 	HRESULT hr = mesh->Load(StringUtils::NarrowToWide(filePath).c_str());
 	if (FAILED(hr))
 	{
@@ -119,7 +117,13 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 		throw std::runtime_error("ComputeMeshlets failed: " + StringUtils::HResultToString(hr));
 	}
 
-	const uint16_t* uniqueVertexIndices = reinterpret_cast<const uint16_t*>(uniqueVertexIB.data());
+	std::vector<uint16_t> uniqueVertexIB16;
+	uniqueVertexIB16.reserve(uniqueVertexIB.size() / 2);
+	for (int i = 0; i < uniqueVertexIB.size(); i += 2)
+	{
+		uint16_t index = *reinterpret_cast<const uint16_t *>(uniqueVertexIB.data() + i);
+		uniqueVertexIB16.emplace_back(index);
+	}
 
 	// Store mesh data
 	MeshData meshData;
@@ -148,14 +152,14 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 		md.primitiveOffset = m.PrimOffset;
 		meshData.meshlets.push_back(md);
 
-		MeshletCullData mcd = ComputeMeshletBounds(&uniqueVertexIndices[m.VertOffset], m.VertCount, pos);
+		MeshletCullData mcd = ComputeMeshletBounds(&uniqueVertexIB16[m.VertOffset], m.VertCount, pos);
 		meshData.meshletCullData.push_back(mcd);
 	}
 
-	meshData.meshletVertices.reserve(uniqueVertexIB.size());
-	for (const uint8_t &index : uniqueVertexIB)
+	meshData.meshletVertices.reserve(uniqueVertexIB16.size());
+	for (const uint16_t &index : uniqueVertexIB16)
 	{
-		meshData.meshletVertices.emplace_back(index);
+		meshData.meshletVertices.push_back(index);
 	}
 
 	meshData.meshletTriangles.reserve(primitiveIndices.size());

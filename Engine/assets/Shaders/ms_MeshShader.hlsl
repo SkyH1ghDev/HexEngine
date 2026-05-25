@@ -112,7 +112,15 @@ void main(
 
 	SetMeshOutputCounts(meshlet.vertCount, meshlet.triCount);
 	
-    // Emit vertices
+	if (gtid < meshlet.triCount)
+	{
+		uint packedTri = tPrimitiveIndices[meshlet.triOffset + gtid];
+		
+		uint3 tri = UnpackTriangle(packedTri);
+
+		tris[gtid] = tri;
+	}
+	
 	if (gtid < meshlet.vertCount)
 	{
 		uint meshletVertexIndex = meshlet.vertOffset + gtid;
@@ -129,16 +137,6 @@ void main(
 		outVert.meshletIndex = gid;
 
 		verts[gtid] = outVert;
-	}
-	
-    // Emit primitive indices
-	if (gtid < meshlet.triCount)
-	{
-		uint packedTri = tPrimitiveIndices[meshlet.triOffset + gtid];
-		
-		uint3 tri = UnpackTriangle(packedTri);
-
-		tris[gtid] = tri;
 	}
 }
 
