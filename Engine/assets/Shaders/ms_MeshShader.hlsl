@@ -123,8 +123,6 @@ void main(
 		Vertex v = tVertices[vertexIndex];
 
 		VertexOut outVert;
-		//outVert.position = mul(float4(v.position, 1.0f), bConstants.WorldViewProj);
-		//outVert.normal = mul(float4(v.normal, 0.0f), bConstants.WorldView).xyz;
 		outVert.position = mul(bConstants.WorldViewProj, float4(v.position, 1.0f));
 		outVert.normal = mul(bConstants.WorldViewProj, float4(v.normal, 0.0f)).xyz;
 		outVert.uv = v.uv;

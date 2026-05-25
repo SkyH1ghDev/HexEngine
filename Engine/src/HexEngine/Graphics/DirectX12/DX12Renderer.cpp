@@ -147,10 +147,10 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 	// Initialize Camera and Objects
 	{
 		mCamera.SetCamera(
-			DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f),	// position
-			DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),	// forward
+			DirectX::XMFLOAT3(0.0f, 1.5f, -3.0f),	// position
+			DirectX::XMFLOAT3(0.0f, -0.5f, 1.0f),	// forward
 			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),	// up
-			DirectX::XM_PIDIV2,						// fovY
+			DirectX::XM_PIDIV2 * 0.7f,				// fovY
 			1280.0f / 720.0f,						// aspectRatio
 			0.01f,									// nearZ
 			20.0f									// farZ

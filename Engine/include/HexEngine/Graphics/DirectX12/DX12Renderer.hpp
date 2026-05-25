@@ -77,7 +77,7 @@ namespace HexEngine::Graphics::DirectX12
 		World::Camera mCamera {};
 		std::vector<World::Object> mObjects {};
 
-		bool mUseMeshShader { false };
+		bool mUseMeshShader { true };
 
         //winrt::com_ptr<ID3D12Device2> m_device;
         //MW::ComPtr<ID3D12CommandQueue> m_commandQueue;
