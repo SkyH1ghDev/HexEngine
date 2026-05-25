@@ -211,10 +211,10 @@ void DX12Renderer::Draw()
 			changed |= ImGui::DragFloat3("Position", &camParams.position.x, 0.01f);
 			changed |= ImGui::DragFloat3("Forward", &camParams.forward.x, 0.01f);
 			changed |= ImGui::DragFloat3("Up", &camParams.up.x, 0.01f);
-			changed |= ImGui::DragFloat("FOV Y", &camParams.fovY, 0.1f);
+			changed |= ImGui::DragFloat("FOV Y", &camParams.fovY, 0.005f, 0.01f, DirectX::XM_PI);
 			changed |= ImGui::DragFloat("Aspect Ratio", &camParams.aspectRatio, 0.01f);
-			changed |= ImGui::DragFloat("Near Z", &camParams.nearZ, 0.01f);
-			changed |= ImGui::DragFloat("Far Z", &camParams.farZ, 0.01f);
+			changed |= ImGui::DragFloat("Near Z", &camParams.nearZ, 0.01f, 0.01f, 100.0f);
+			changed |= ImGui::DragFloat("Far Z", &camParams.farZ, 0.1f, camParams.nearZ, 100.0f);
 
 			if (changed)
 			{
