@@ -70,14 +70,14 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 		throw std::runtime_error("Mesh Shader support is required but not available on this device.");
 	}
 	
-	mDirectCommandList->Close();
+	DirectXUtils::ThrowIfFailed(mDirectCommandList->Close());
 
 	// Setup Viewport and Scissor Rect
 	{
 		mViewport.TopLeftX = 0;
 		mViewport.TopLeftY = 0;
-		mViewport.Width = (float)pWindow.GetWidth();
-		mViewport.Height = (float)pWindow.GetHeight();
+		mViewport.Width = static_cast<float>(pWindow.GetWidth());
+		mViewport.Height = static_cast<float>(pWindow.GetHeight());
 		mViewport.MinDepth = 0.0f;
 		mViewport.MaxDepth = 1.0f;
 
@@ -109,7 +109,7 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 
 			CD3DX12_ROOT_SIGNATURE_DESC rsDesc{};
 			rsDesc.Init(
-				sizeof(params) / sizeof(params[0]),
+				std::size(params),
 				params,
 				0,
 				nullptr,
@@ -150,10 +150,10 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 			DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f),	// position
 			DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),	// forward
 			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),	// up
-			DirectX::XM_PIDIV2,						// fovY
-			1280.0f / 720.0f,						// aspectRatio
-			0.01f,									// nearZ
-			20.0f									// farZ
+			DirectX::XM_PIDIV2,								// fovY
+			1280.0f / 720.0f,								// aspectRatio
+			0.01f,											// nearZ
+			20.0f											// farZ
 		);
 
 		DirectX::XMFLOAT4X4A objMatrix{};
