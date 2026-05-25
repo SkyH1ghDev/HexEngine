@@ -292,12 +292,6 @@ void MeshLoader::UploadMeshResources(
 		HANDLE event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 		fence->SetEventOnCompletion(1, event);
 
-		DWORD lErr = GetLastError();
-		if (lErr != ERROR_SUCCESS)
-		{
-			throw std::runtime_error("Failed to set fence event");
-		}
-
 		WaitForSingleObjectEx(event, 10000, false);
 		CloseHandle(event);
 	}
