@@ -70,14 +70,14 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 		throw std::runtime_error("Mesh Shader support is required but not available on this device.");
 	}
 	
-	mDirectCommandList->Close();
+	DirectXUtils::ThrowIfFailed(mDirectCommandList->Close());
 
 	// Setup Viewport and Scissor Rect
 	{
 		mViewport.TopLeftX = 0;
 		mViewport.TopLeftY = 0;
-		mViewport.Width = (float)pWindow.GetWidth();
-		mViewport.Height = (float)pWindow.GetHeight();
+		mViewport.Width = static_cast<float>(pWindow.GetWidth());
+		mViewport.Height = static_cast<float>(pWindow.GetHeight());
 		mViewport.MinDepth = 0.0f;
 		mViewport.MaxDepth = 1.0f;
 
@@ -109,7 +109,7 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 
 			CD3DX12_ROOT_SIGNATURE_DESC rsDesc{};
 			rsDesc.Init(
-				sizeof(params) / sizeof(params[0]),
+				std::size(params),
 				params,
 				0,
 				nullptr,
