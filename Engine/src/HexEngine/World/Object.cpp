@@ -13,8 +13,8 @@ HexEngine::World::Object::Object(Device &device, const DirectX::XMFLOAT4X4A &mat
 	auto defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	auto uploadHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 
-	auto &worldBufferCOM = mWorldBuffer.GetCOM();
-	auto &worldUploadBufferCOM = mWorldUploadBuffer.GetCOM();
+    winrt::com_ptr<ID3D12Resource2> worldBufferCOM;
+    winrt::com_ptr<ID3D12Resource2> worldUploadBufferCOM;
 
     // Default Heap
     ThrowIfFailed(device.GetRaw()->CreateCommittedResource(
@@ -35,6 +35,9 @@ HexEngine::World::Object::Object(Device &device, const DirectX::XMFLOAT4X4A &mat
         nullptr,
         IID_PPV_ARGS(&worldUploadBufferCOM)
     ));
+
+	mWorldBuffer = Resource(worldBufferCOM);
+	mWorldUploadBuffer = Resource(worldUploadBufferCOM);
 }
 
 void HexEngine::World::Object::Update([[maybe_unused]] CommandList &cmdList, const Camera &camera)
