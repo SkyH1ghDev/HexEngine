@@ -71,8 +71,11 @@ namespace HexEngine::Graphics::DirectX12
 		Assets::ShaderData mMShader {};
 		Assets::ShaderData mPShader {};
 
-		World::Camera mCamera{};
-		std::vector<World::Object> mObjects{};
+        D3D12_VIEWPORT mViewport {};
+        D3D12_RECT mScissorRect {};
+
+		World::Camera mCamera {};
+		std::vector<World::Object> mObjects {};
 
         //winrt::com_ptr<ID3D12Device2> m_device;
         //MW::ComPtr<ID3D12CommandQueue> m_commandQueue;

@@ -71,6 +71,21 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 	}
 	
 	mDirectCommandList->Close();
+
+	// Setup Viewport and Scissor Rect
+	{
+		mViewport.TopLeftX = 0;
+		mViewport.TopLeftY = 0;
+		mViewport.Width = (float)pWindow.GetWidth();
+		mViewport.Height = (float)pWindow.GetHeight();
+		mViewport.MinDepth = 0.0f;
+		mViewport.MaxDepth = 1.0f;
+
+		mScissorRect.left = 0;
+		mScissorRect.top = 0;
+		mScissorRect.right = pWindow.GetWidth();
+		mScissorRect.bottom = pWindow.GetHeight();
+	}
 	
 	// Load Assets
 	{
@@ -203,7 +218,7 @@ void DX12Renderer::Draw()
 
 void DX12Renderer::Update()
 {
-	double dTime = Time::Clock::GetDeltaTime();
+	float dTime = static_cast<float>(Time::Clock::GetDeltaTime());
 
 	// TODO: Camera controls
 
@@ -212,7 +227,7 @@ void DX12Renderer::Update()
 		DirectX::XMMATRIX objMat = DirectX::XMLoadFloat4x4A(&object.GetWorldMatrix());
 		
 		// Rotate object around Y-axis
-		objMat *= DirectX::XMMatrixRotationY(0.5f * static_cast<float>(dTime));
+		objMat *= DirectX::XMMatrixRotationY(0.000000002f * dTime);
 
 		DirectX::XMFLOAT4X4A newObjMat{};
 		DirectX::XMStoreFloat4x4A(&newObjMat, objMat);
@@ -266,7 +281,71 @@ void DX12Renderer::Render()
 
 	// Draw Objects
 	{
-		// TODO: Draw objects
+		mDirectCommandList->RSSetViewports(1, &mViewport);
+		mDirectCommandList->RSSetScissorRects(1, &mScissorRect);
+
+		if (true)
+		{
+			mDirectCommandList->SetPipelineState(mGraphicsPipelineState.pipelineState.get());
+			mDirectCommandList->SetGraphicsRootSignature(mGraphicsRootSignature.rootSignature.get());
+
+			mDirectCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			for (auto &object : mObjects)
+			{
+				auto *meshData = static_cast<Assets::MeshData *>(object.GetMeshPtr());
+				if (!meshData || meshData->meshlets.empty())
+				{
+					continue;
+				}
+
+				const auto &resources = meshData->resources;
+
+				mDirectCommandList->SetGraphicsRootConstantBufferView(
+					0,
+					object.GetWorldBuffer().GetRaw()->GetGPUVirtualAddress()
+				);
+
+				mDirectCommandList->IASetVertexBuffers(0, 1, &resources.vertexBufferView);
+				mDirectCommandList->IASetIndexBuffer(&resources.indexBufferView);
+				mDirectCommandList->DrawIndexedInstanced(resources.indexBufferView.SizeInBytes / sizeof(std::uint16_t), 1, 0, 0, 0);
+			}
+		}
+		else
+		{
+			mDirectCommandList->SetPipelineState(mMeshPipelineState.pipelineState.get());
+			mDirectCommandList->SetGraphicsRootSignature(mMeshRootSignature.rootSignature.get());
+
+			for (auto &object : mObjects)
+			{
+				auto *meshData = static_cast<Assets::MeshData *>(object.GetMeshPtr());
+				if (!meshData || meshData->meshlets.empty())
+				{
+					continue;
+				}
+
+				const auto &resources = meshData->resources;
+
+				mDirectCommandList->SetGraphicsRootConstantBufferView(
+					0,
+					object.GetWorldBuffer().GetRaw()->GetGPUVirtualAddress()
+				);
+
+				std::uint32_t meshConstants[2] =
+				{
+					static_cast<std::uint32_t>(sizeof(meshData->indices[0])),
+					0u
+				};
+
+				mDirectCommandList->SetGraphicsRoot32BitConstants(1, 2, meshConstants, 0);
+				mDirectCommandList->SetGraphicsRootShaderResourceView(2, resources.vertexBuffer->GetGPUVirtualAddress());
+				mDirectCommandList->SetGraphicsRootShaderResourceView(3, resources.meshletBuffer->GetGPUVirtualAddress());
+				mDirectCommandList->SetGraphicsRootShaderResourceView(4, resources.meshletVerticesBuffer->GetGPUVirtualAddress());
+				mDirectCommandList->SetGraphicsRootShaderResourceView(5, resources.meshletTrianglesBuffer->GetGPUVirtualAddress());
+
+				mDirectCommandList->DispatchMesh(static_cast<std::uint32_t>(meshData->meshlets.size()), 1, 1);
+			}
+		}
 	}
 
 	// Present
