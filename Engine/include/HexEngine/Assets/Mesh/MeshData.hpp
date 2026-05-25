@@ -34,15 +34,6 @@ namespace HexEngine::Assets
 		float coneCutoff{ 0 };
 	};
 
-	struct MeshInfo
-	{
-		std::uint32_t IndexSize{ 0 };
-		std::uint32_t MeshletCount{ 0 };
-
-		std::uint32_t LastMeshletVertCount{ 0 };
-		std::uint32_t LastMeshletPrimCount{ 0 };
-	};
-
 	struct MeshResources
 	{
 		winrt::com_ptr<ID3D12Resource> vertexBuffer{ nullptr };
@@ -53,8 +44,6 @@ namespace HexEngine::Assets
 		winrt::com_ptr<ID3D12Resource> meshletTrianglesBuffer{ nullptr };	// primitives
 		winrt::com_ptr<ID3D12Resource> meshletCullDataBuffer{ nullptr };
 
-		winrt::com_ptr<ID3D12Resource> meshInfoBuffer{ nullptr };
-
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
 		D3D12_INDEX_BUFFER_VIEW  indexBufferView{ };
 	};
@@ -62,7 +51,7 @@ namespace HexEngine::Assets
 	struct MeshData
 	{
 		std::vector<VertexData>		vertices{ };
-		std::vector<std::uint16_t>	indices{ };
+		std::vector<std::uint32_t>	indices{ };
 
 		std::vector<MeshletData>			meshlets{ };
 		std::vector<std::uint32_t>			meshletVertices{ };		// unique vertex indices per meshlet

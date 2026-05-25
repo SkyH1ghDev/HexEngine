@@ -340,7 +340,7 @@ void DX12Renderer::Render()
 
 				std::uint32_t meshConstants[2] =
 				{
-					static_cast<std::uint32_t>(sizeof(meshData->indices[0])),
+					static_cast<std::uint32_t>(sizeof(meshData->meshletVertices[0])),
 					0u
 				};
 
@@ -377,7 +377,7 @@ void DX12Renderer::Render()
 
 				mDirectCommandList->IASetVertexBuffers(0, 1, &resources.vertexBufferView);
 				mDirectCommandList->IASetIndexBuffer(&resources.indexBufferView);
-				mDirectCommandList->DrawIndexedInstanced(resources.indexBufferView.SizeInBytes / sizeof(std::uint16_t), 1, 0, 0, 0);
+				mDirectCommandList->DrawIndexedInstanced(resources.indexBufferView.SizeInBytes / sizeof(meshData->indices[0]), 1, 0, 0, 0);
 			}
 		}
 	}

@@ -8,19 +8,23 @@
 #include <DirectXMesh.h>
 #include <utils/WaveFrontReader.h>
 
+#define MAX_MESHLET_VERTS 64
+#define MAX_MESHLET_PRIMS 126
+
 using namespace winrt;
 using namespace DirectX;
 using namespace DirectXUtils;
 using namespace HexEngine::Assets;
 using namespace HexEngine::Graphics::DirectX12;
 
+template<typename T>
 static void ComputeBoundingCone(
 	XMVECTOR &outAxis, 
 	float &outCutoff,
 	size_t vertCount, 
 	const std::unique_ptr<XMFLOAT3[]> &positions,
 	size_t posStride, 
-	const uint16_t *uniqueVertexIB)
+	const T *uniqueVertexIB)
 {
 	XMVECTOR coneAxis = XMVectorZero();
 	float coneCutoff = 0.0f;
@@ -46,8 +50,9 @@ static void ComputeBoundingCone(
 	outCutoff = coneCutoff;
 }
 
+template<typename T>
 static MeshletCullData ComputeMeshletBounds(
-	const uint16_t *uniqueVertexIB, 
+	const T *uniqueVertexIB,
 	size_t vertCount,
 	const std::unique_ptr<XMFLOAT3[]> &positions)
 {
@@ -57,9 +62,9 @@ static MeshletCullData ComputeMeshletBounds(
 	BoundingSphere::CreateFromPoints(cullData.bounds, vertCount, positions.get(), sizeof(XMFLOAT3));
 
 	// Compute bounding cone
-	XMVECTOR coneAxis;
-	float coneCutoff;
-	ComputeBoundingCone(coneAxis, coneCutoff, vertCount, positions, sizeof(XMFLOAT3), uniqueVertexIB);
+	XMVECTOR coneAxis{};
+	float coneCutoff = 0.0f;
+	ComputeBoundingCone<T>(coneAxis, coneCutoff, vertCount, positions, sizeof(XMFLOAT3), uniqueVertexIB);
 
 	XMStoreFloat3(&cullData.coneAxis, coneAxis);
 	cullData.coneCutoff = coneCutoff;
@@ -81,7 +86,7 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 	}
 
 	// Load Wavefront OBJ
-	auto mesh = std::make_unique<DX::WaveFrontReader<uint16_t>>();
+	auto mesh = std::make_unique<DX::WaveFrontReader<std::uint32_t>>();
 
 	HRESULT hr = mesh->Load(StringUtils::NarrowToWide(filePath).c_str());
 	if (FAILED(hr))
@@ -109,7 +114,9 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 		nullptr,
 		meshlets, 
 		uniqueVertexIB, 
-		primitiveIndices
+		primitiveIndices,
+		MAX_MESHLET_VERTS,
+		MAX_MESHLET_PRIMS
 	);
 
 	if (FAILED(hr))
@@ -117,12 +124,12 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 		throw std::runtime_error("ComputeMeshlets failed: " + StringUtils::HResultToString(hr));
 	}
 
-	std::vector<uint16_t> uniqueVertexIB16;
-	uniqueVertexIB16.reserve(uniqueVertexIB.size() / 2);
-	for (int i = 0; i < uniqueVertexIB.size(); i += 2)
+	std::vector<std::uint32_t> uniqueVertexIB32;
+	uniqueVertexIB32.reserve(uniqueVertexIB.size() / sizeof(std::uint32_t));
+	for (int i = 0; i < uniqueVertexIB.size(); i += sizeof(std::uint32_t))
 	{
-		uint16_t index = *reinterpret_cast<const uint16_t *>(uniqueVertexIB.data() + i);
-		uniqueVertexIB16.emplace_back(index);
+		std::uint32_t index = *reinterpret_cast<const std::uint32_t *>(uniqueVertexIB.data() + i);
+		uniqueVertexIB32.emplace_back(index);
 	}
 
 	// Store mesh data
@@ -130,11 +137,11 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 
 	// Vertices
 	meshData.vertices.resize(mesh->vertices.size());
-	std::memcpy(meshData.vertices.data(), mesh->vertices.data(), sizeof(DX::WaveFrontReader<uint16_t>::Vertex) * mesh->vertices.size());
+	std::memcpy(meshData.vertices.data(), mesh->vertices.data(), sizeof(DX::WaveFrontReader<std::uint32_t>::Vertex) * mesh->vertices.size());
 
 	// Indices
 	meshData.indices.reserve(mesh->indices.size());
-	for (const uint16_t &index : mesh->indices)
+	for (const std::uint32_t &index : mesh->indices)
 	{
 		meshData.indices.emplace_back(index);
 	}
@@ -152,12 +159,12 @@ MeshData MeshLoader::LoadMesh(std::string_view filePath)
 		md.primitiveOffset = m.PrimOffset;
 		meshData.meshlets.push_back(md);
 
-		MeshletCullData mcd = ComputeMeshletBounds(&uniqueVertexIB16[m.VertOffset], m.VertCount, pos);
+		MeshletCullData mcd = ComputeMeshletBounds(&uniqueVertexIB32[m.VertOffset], m.VertCount, pos);
 		meshData.meshletCullData.push_back(mcd);
 	}
 
-	meshData.meshletVertices.reserve(uniqueVertexIB16.size());
-	for (const uint16_t &index : uniqueVertexIB16)
+	meshData.meshletVertices.reserve(uniqueVertexIB32.size());
+	for (const std::uint32_t &index : uniqueVertexIB32)
 	{
 		meshData.meshletVertices.push_back(index);
 	}
@@ -195,10 +202,9 @@ void MeshLoader::UploadMeshResources(
 	auto vertexDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.vertices.size() * sizeof(VertexData));
 	auto indexDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.indices.size() * sizeof(meshData.indices[0]));
 	auto meshletDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshlets.size() * sizeof(meshData.meshlets[0]));
-	auto meshletVertexDesc = CD3DX12_RESOURCE_DESC::Buffer(DivRoundUp(meshData.meshletVertices.size(), 4) * 4);
+	auto meshletVertexDesc = CD3DX12_RESOURCE_DESC::Buffer(DivRoundUp(meshData.meshletVertices.size(), sizeof(meshData.meshletVertices[0])) * sizeof(meshData.meshletVertices[0]));
 	auto meshletTriangleDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshletTriangles.size() * sizeof(meshData.meshletTriangles[0]));
 	auto meshletCullDataDesc = CD3DX12_RESOURCE_DESC::Buffer(meshData.meshlets.size() * sizeof(MeshletCullData));
-	auto meshInfoDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(MeshInfo));
 
 	auto defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.vertexBuffer)));
@@ -207,11 +213,10 @@ void MeshLoader::UploadMeshResources(
 	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.meshletVerticesBuffer)));
 	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.meshletTrianglesBuffer)));
 	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.meshletCullDataBuffer)));
-	ThrowIfFailed(pDevice->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&res.meshInfoBuffer)));
 
 	// Create views
 	res.indexBufferView.BufferLocation = res.indexBuffer->GetGPUVirtualAddress();
-	res.indexBufferView.Format = DXGI_FORMAT_R16_UINT;
+	res.indexBufferView.Format = (sizeof(meshData.indices[0]) == 2) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 	res.indexBufferView.SizeInBytes = static_cast<std::uint32_t>(meshData.indices.size() * sizeof(meshData.indices[0]));
 	res.vertexBufferView.BufferLocation = res.vertexBuffer->GetGPUVirtualAddress();
 	res.vertexBufferView.SizeInBytes = static_cast<std::uint32_t>(meshData.vertices.size() * sizeof(VertexData));
@@ -224,7 +229,6 @@ void MeshLoader::UploadMeshResources(
 	com_ptr<ID3D12Resource> meshletVertexUpload;
 	com_ptr<ID3D12Resource> meshletTriangleUpload;
 	com_ptr<ID3D12Resource> meshletCullDataUpload;
-	com_ptr<ID3D12Resource> meshInfoUpload;
 
 	auto uploadHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &vertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexUpload)));
@@ -233,7 +237,6 @@ void MeshLoader::UploadMeshResources(
 	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletVertexDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletVertexUpload)));
 	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletTriangleDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletTriangleUpload)));
 	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshletCullDataDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshletCullDataUpload)));
-	ThrowIfFailed(pDevice->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &meshInfoDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&meshInfoUpload)));
 
 	// Copy CPU -> upload heap
 	auto CopyToUpload = [](ID3D12Resource *res, auto *data, std::size_t sizeBytes) {
@@ -243,20 +246,12 @@ void MeshLoader::UploadMeshResources(
 		res->Unmap(0, nullptr);
 	};
 
-	CopyToUpload(vertexUpload.get(), meshData.vertices.data(), meshData.vertices.size() * sizeof(VertexData));
+	CopyToUpload(vertexUpload.get(), meshData.vertices.data(), meshData.vertices.size() * sizeof(meshData.vertices[0]));
 	CopyToUpload(indexUpload.get(), meshData.indices.data(), meshData.indices.size() * sizeof(meshData.indices[0]));
 	CopyToUpload(meshletUpload.get(), meshData.meshlets.data(),	meshData.meshlets.size() * sizeof(meshData.meshlets[0]));
 	CopyToUpload(meshletVertexUpload.get(), meshData.meshletVertices.data(), meshData.meshletVertices.size() * sizeof(meshData.meshletVertices[0]));
 	CopyToUpload(meshletTriangleUpload.get(), meshData.meshletTriangles.data(),	meshData.meshletTriangles.size() * sizeof(meshData.meshletTriangles[0]));
 	CopyToUpload(meshletCullDataUpload.get(), meshData.meshletCullData.data(), meshData.meshletCullData.size() * sizeof(meshData.meshletCullData[0]));
-
-	MeshInfo info{};
-	info.IndexSize = sizeof(meshData.indices[0]);
-	info.MeshletCount = (std::uint32_t)meshData.meshlets.size();
-	info.LastMeshletVertCount = meshData.meshlets.back().vertexCount;
-	info.LastMeshletPrimCount = meshData.meshlets.back().primitiveCount;
-
-	CopyToUpload(meshInfoUpload.get(), &info, sizeof(info));
 
 	// GPU upload pass
 	pCmdList->Reset(pCmdAlloc.GetRaw(), nullptr);
@@ -278,7 +273,6 @@ void MeshLoader::UploadMeshResources(
 	AddBufferUpload(res.meshletVerticesBuffer.get(), meshletVertexUpload.get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	AddBufferUpload(res.meshletTrianglesBuffer.get(), meshletTriangleUpload.get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	AddBufferUpload(res.meshletCullDataBuffer.get(), meshletCullDataUpload.get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	AddBufferUpload(res.meshInfoBuffer.get(), meshInfoUpload.get(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
 	ThrowIfFailed(pCmdList->Close());
 
