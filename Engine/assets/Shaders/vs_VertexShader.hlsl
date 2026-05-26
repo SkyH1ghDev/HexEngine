@@ -1,4 +1,5 @@
-﻿struct VertexIn
+﻿
+struct VertexIn
 {
     float3 Position		: POSITION;
     float3 Normal		: NORMAL;
@@ -31,7 +32,7 @@ VertexOut main(VertexIn pInput)
     output.Position = mul(bConstants.WorldViewProj, float4(pInput.Position, 1.0f));
     output.Normal = pInput.Normal;
     output.UV = pInput.UV;
-    output.lmao = 0;
+	output.lmao = asuint(pInput.Normal.x) ^ asuint(pInput.Normal.y) ^ asuint(pInput.Normal.z);
     
     return output;
 }

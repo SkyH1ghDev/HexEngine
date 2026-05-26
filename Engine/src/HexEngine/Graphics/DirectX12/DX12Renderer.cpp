@@ -94,7 +94,8 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 		mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/MaxwellHighRes.obj");
 		Assets::MeshLoader::UploadMeshResources(mDevice, mDirectCommandQueue, mDirectCommandAllocator, mDirectCommandList, mMeshMaxwell);
 
-		mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Whiskers.obj");
+		//mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Whiskers.obj");
+		mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/WhiskersHighRes.obj");
 		Assets::MeshLoader::UploadMeshResources(mDevice, mDirectCommandQueue, mDirectCommandAllocator, mDirectCommandList, mMeshWhiskers);
 
 		// Load Shaders
@@ -148,7 +149,7 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 	// Initialize Camera and Objects
 	{
 		mCamera.SetCamera(
-			DirectX::XMFLOAT3(0.0f, 1.5f, -3.0f),	// position
+			DirectX::XMFLOAT3(0.0f, 1.5f, -2.5f),	// position
 			DirectX::XMFLOAT3(0.0f, -0.5f, 1.0f),	// forward
 			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),	// up
 			DirectX::XM_PIDIV2 * 0.3f,				// fovY
