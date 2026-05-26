@@ -30,7 +30,16 @@ struct PixelIn
 	uint meshletIndex	: COLOR0;
 };
 
-float4 main(PixelIn input) : SV_TARGET
+struct PixelOut
 {
-	return float4(UIDtoCol(input.meshletIndex), 1.0f);
+	float4 color		: SV_TARGET;
+};
+
+PixelOut main(PixelIn input) : SV_TARGET
+{
+	PixelOut output;
+	
+	output.color = float4(UIDtoCol(input.meshletIndex), 1.0f);
+	
+	return output;
 }
