@@ -2,6 +2,7 @@
 
 #include <DirectXMesh.h>
 #include <print>
+#include <cmath>
 #include <HexEngine/Utils/DirectXUtils.hpp>
 #include <HexEngine/Graphics/DirectX12/DX12RendererSetup.hpp>
 
@@ -146,25 +147,33 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 		mGraphicsPipelineState = Assets::ShaderLoader::CreateGraphicsPipelineState(mDevice, mGraphicsRootSignature, Assets::MeshLoader::cDefaultElementDesc, 3, &mVShader, &mPShader);
 	}
 
+
 	// Initialize Camera and Objects
 	{
+		constexpr int NUM_OBJECTS {1024};
+		const int SQRT_NUM_OBJECTS {static_cast<int>(sqrt(NUM_OBJECTS))};
+		
 		mCamera.SetCamera(
-			DirectX::XMFLOAT3(0.0f, 1.5f, -2.5f),	// position
-			DirectX::XMFLOAT3(0.0f, -0.5f, 1.0f),	// forward
+			DirectX::XMFLOAT3(0.0, 0.0f, -static_cast<float>(SQRT_NUM_OBJECTS) * 1.3f),	// position
+			DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),	// forward
 			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),	// up
-			DirectX::XM_PIDIV2 * 0.3f,				// fovY
+			DirectX::XM_PIDIV2 * 0.5f,				// fovY
 			1280.0f / 720.0f,						// aspectRatio
 			0.01f,									// nearZ
-			20.0f									// farZ
+			100.0f									// farZ
 		);
 
-		DirectX::XMMATRIX objMat = DirectX::XMMatrixIdentity();
-
+		
 		DirectX::XMFLOAT4X4A objMatrix{};
-		DirectX::XMStoreFloat4x4(&objMatrix, objMat);
+		
+		for (int i = 0; i < NUM_OBJECTS; ++i)
+		{
+			DirectX::XMMATRIX objMat = DirectX::XMMatrixTranslation(static_cast<float>(i % SQRT_NUM_OBJECTS) - static_cast<float>(SQRT_NUM_OBJECTS) / 2, static_cast<float>(i / SQRT_NUM_OBJECTS) - static_cast<float>(SQRT_NUM_OBJECTS) / 2, 0);
+			DirectX::XMStoreFloat4x4(&objMatrix, objMat);
 
-		mObjects.emplace_back(mDevice, objMatrix, "Maxwell", &mMeshMaxwell);
-		mObjects.emplace_back(mDevice, objMatrix, "Whiskers", &mMeshWhiskers);
+			mObjects.emplace_back(mDevice, objMatrix, "Maxwell", &mMeshMaxwell);
+			mObjects.emplace_back(mDevice, objMatrix, "Whiskers", &mMeshWhiskers);
+		}
 	}
 }
 
@@ -194,6 +203,7 @@ void DX12Renderer::Draw()
 
 	// Update
 	Update();
+
 
 	// ImGui
 #if defined(_DEBUG)
@@ -233,16 +243,18 @@ void DX12Renderer::Draw()
 	}
 	ImGui::End();
 
+
 	HexEngine::Graphics::UI::ImGuiTool::Run();
 #endif
 
 	// Render
 	Render();
-
-	#if defined(_DEBUG)
+	
+#if defined(_DEBUG)
 	HexEngine::Graphics::UI::ImGuiTool::End();
 	#endif
 
+	
 	mSwapChainManager.PresentFrame(mVSync);
 
 	std::uint64_t fenceValue = mDirectCommandQueue.GPUSignal(mFence, mFence.GetFenceValue());
@@ -264,7 +276,12 @@ void DX12Renderer::Update()
 		DirectX::XMMATRIX objMat = DirectX::XMLoadFloat4x4A(&object.GetWorldMatrix());
 		
 		// Rotate object around Y-axis
-		objMat *= DirectX::XMMatrixRotationY(0.000000002f * dTime);
+		
+		DirectX::XMVECTOR vecScale, vecRotation, vecTranslation;
+		DirectX::XMMatrixDecompose(&vecScale, &vecRotation, &vecTranslation, objMat);
+		vecRotation = DirectX::XMQuaternionMultiply(vecRotation, DirectX::XMQuaternionRotationAxis({0.0f, 1.0f, 0.0f, 0.0f}, 0.000000002f * dTime));
+		objMat = DirectX::XMMatrixAffineTransformation(vecScale, {0.0f, 0.0f, 0.0f, 0.0f}, vecRotation, vecTranslation);
+		//objMat *= DirectX::XMMatrixRotationY(0.000000002f * dTime);
 
 		DirectX::XMFLOAT4X4A newObjMat{};
 		DirectX::XMStoreFloat4x4A(&newObjMat, objMat);
