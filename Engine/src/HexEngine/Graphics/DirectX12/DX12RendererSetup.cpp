@@ -1,3 +1,4 @@
+#include <PCH/EnginePCH.hpp>
 #include "DX12RendererSetup.hpp"
 
 #include <HexEngine/Utils/DirectXUtils.hpp>

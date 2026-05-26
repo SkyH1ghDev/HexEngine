@@ -33,7 +33,7 @@ namespace HexEngine::Graphics::DirectX12
         bool mVSync {false};
 
         // ImGui
-#if defined(_DEBUG)
+#if defined(USE_IMGUI)
         DebugLayer mDebugInterface;
         DescriptorHeap mImGuiDescriptorHeap;
 #endif

@@ -1,3 +1,4 @@
+#include <PCH/EnginePCH.hpp>
 #include "DX12Renderer.hpp"
 
 #include <DirectXMesh.h>
@@ -6,7 +7,7 @@
 #include <HexEngine/Utils/DirectXUtils.hpp>
 #include <HexEngine/Graphics/DirectX12/DX12RendererSetup.hpp>
 
-#if defined(_DEBUG)
+#if defined(USE_IMGUI)
 #include <HexEngine/Graphics/UI/ImGuiTool.hpp>
 #endif
 
@@ -61,7 +62,7 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 	mSwapChainManager = DX12RendererSetup::CreateSwapChainManager(pWindow, mDevice, mDirectCommandQueue, mNumFrames);
 	mFence = DX12RendererSetup::CreateFence(mDevice);
 
-	#if defined(_DEBUG)
+	#if defined(USE_IMGUI)
 	mImGuiDescriptorHeap = DX12RendererSetup::CreateDescriptorHeap(mDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, mNumFrames);
 	HexEngine::Graphics::UI::ImGuiTool::Initialize(pWindow, mDevice, mDirectCommandQueue, mImGuiDescriptorHeap, DXGI_FORMAT_R8G8B8A8_UNORM, 3);
 	#endif
@@ -179,7 +180,7 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 
 DX12Renderer::~DX12Renderer()
 {
-	#if defined(_DEBUG)
+	#if defined(USE_IMGUI)
 	HexEngine::Graphics::UI::ImGuiTool::Shutdown();
 	#endif
 	
@@ -206,7 +207,7 @@ void DX12Renderer::Draw()
 
 
 	// ImGui
-#if defined(_DEBUG)
+#if defined(USE_IMGUI)
 	HexEngine::Graphics::UI::ImGuiTool::Start();
 
 	ImGui::Begin("Renderer");
@@ -250,7 +251,7 @@ void DX12Renderer::Draw()
 	// Render
 	Render();
 	
-#if defined(_DEBUG)
+#if defined(USE_IMGUI)
 	HexEngine::Graphics::UI::ImGuiTool::End();
 	#endif
 
@@ -322,13 +323,13 @@ void DX12Renderer::Render()
 
 		std::vector<ID3D12DescriptorHeap*> descriptorHeaps =
 		{
-			#if defined(_DEBUG)
+			#if defined(USE_IMGUI)
 			mImGuiDescriptorHeap.GetRaw()
 			#endif
 		};
 		
 		mDirectCommandList->SetDescriptorHeaps(static_cast<std::uint32_t>(descriptorHeaps.size()), descriptorHeaps.data());
-		#if defined(_DEBUG)
+		#if defined(USE_IMGUI)
 		HexEngine::Graphics::UI::ImGuiTool::RenderDrawData(mDirectCommandList);
 		#endif
 	}

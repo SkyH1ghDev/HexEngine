@@ -1,3 +1,4 @@
+#include <PCH/EnginePCH.hpp>
 #include "EngineLoop.hpp"
 
 #include <HexEngine/Input/InputHandler.hpp>

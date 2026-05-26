@@ -1,3 +1,4 @@
+#include <PCH/EnginePCH.hpp>
 #include "CommandQueue.hpp"
 
 using namespace HexEngine::Graphics::DirectX12;

@@ -1,4 +1,5 @@
-﻿#include "DX12DeviceCapabilities.hpp"
+﻿#include <PCH/EnginePCH.hpp>
+#include "DX12DeviceCapabilities.hpp"
 
 bool DX12DeviceCapabilities::CheckTearingSupport()
 {

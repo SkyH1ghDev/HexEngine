@@ -1,5 +1,7 @@
 #pragma once
 
+#define USE_IMGUI
+
 // ---------------------- //
 //                        //
 //    STANDARD LIBRARY    //
@@ -56,6 +58,7 @@
 //                        //
 // ---------------------- //
 
+#include <HexEngine/Engine/EngineSettings.hpp>
 #include <HexEngine/Graphics/DirectX12/BackBuffer.hpp>
 #include <HexEngine/Graphics/DirectX12/CommandAllocator.hpp>
 #include <HexEngine/Graphics/DirectX12/CommandList.hpp>

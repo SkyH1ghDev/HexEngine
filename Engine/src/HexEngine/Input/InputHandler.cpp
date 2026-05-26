@@ -1,3 +1,4 @@
+#include <PCH/EnginePCH.hpp>
 #include "InputHandler.hpp"
 
 using namespace HexEngine::Input;

@@ -1,3 +1,4 @@
+#include <PCH/EnginePCH.hpp>
 #include "SwapChainManager.hpp"
 
 #include <HexEngine/Utils/DirectXUtils.hpp>

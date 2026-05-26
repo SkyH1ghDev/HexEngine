@@ -1,3 +1,4 @@
+#include <PCH/EnginePCH.hpp>
 #include "SDLEventHandler.hpp"
 #include <HexEngine/Input/InputHandler.hpp>
 #include <HexEngine/Engine/EngineLoop.hpp>
@@ -12,7 +13,7 @@ void SDLEventHandler::HandleEvents()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        #if defined(_DEBUG)
+        #if defined(USE_IMGUI)
             ImGui_ImplSDL3_ProcessEvent(&event);
         #endif
         

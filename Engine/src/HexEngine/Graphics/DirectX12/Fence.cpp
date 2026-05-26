@@ -1,3 +1,4 @@
+#include <PCH/EnginePCH.hpp>
 #include "Fence.hpp"
 #include <HexEngine/Utils/DirectXUtils.hpp>
 
