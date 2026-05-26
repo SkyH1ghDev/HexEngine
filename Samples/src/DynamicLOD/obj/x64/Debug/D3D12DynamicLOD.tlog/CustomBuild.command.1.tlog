@@ -1,0 +1,6 @@
+^C:\USERS\CHBH22\DOCUMENTS\HEXENGINE\SAMPLES\SRC\DYNAMICLOD\MESHLETAS.HLSL
+dxc.exe -nologo -Tas_6_5 -E"main" -Zi -Qembed_debug -Fo"bin\x64\Debug\MeshletAS.cso" "C:\Users\chbh22\Documents\HexEngine\Samples\src\DynamicLOD\MeshletAS.hlsl"
+^C:\USERS\CHBH22\DOCUMENTS\HEXENGINE\SAMPLES\SRC\DYNAMICLOD\MESHLETMS.HLSL
+dxc.exe -nologo -Tms_6_5 -E"main" -Zi -Qembed_debug -Fo"bin\x64\Debug\MeshletMS.cso" "C:\Users\chbh22\Documents\HexEngine\Samples\src\DynamicLOD\MeshletMS.hlsl"
+^C:\USERS\CHBH22\DOCUMENTS\HEXENGINE\SAMPLES\SRC\DYNAMICLOD\MESHLETPS.HLSL
+dxc.exe -nologo -Tps_6_3 -E"main" -Zi -Qembed_debug -Fo"bin\x64\Debug\MeshletPS.cso" "C:\Users\chbh22\Documents\HexEngine\Samples\src\DynamicLOD\MeshletPS.hlsl"

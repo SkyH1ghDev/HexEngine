@@ -1,0 +1,8 @@
+C:\Users\chbh22\Documents\HexEngine\Samples\src\MeshletRender\bin\x64\Debug\D3D12\D3D12Core.dll
+C:\Users\chbh22\Documents\HexEngine\Samples\src\MeshletRender\bin\x64\Debug\D3D12\D3D12Core.pdb
+C:\Users\chbh22\Documents\HexEngine\Samples\src\MeshletRender\bin\x64\Debug\D3D12\D3D12SDKLayers.dll
+C:\Users\chbh22\Documents\HexEngine\Samples\src\MeshletRender\bin\x64\Debug\D3D12\D3D12SDKLayers.pdb
+C:\Users\chbh22\Documents\HexEngine\Samples\src\MeshletRender\bin\x64\Debug\dxcompiler.dll
+C:\Users\chbh22\Documents\HexEngine\Samples\src\MeshletRender\bin\x64\Debug\dxcompiler.pdb
+C:\Users\chbh22\Documents\HexEngine\Samples\src\MeshletRender\bin\x64\Debug\dxil.dll
+C:\Users\chbh22\Documents\HexEngine\Samples\src\MeshletRender\bin\x64\Debug\dxil.pdb
