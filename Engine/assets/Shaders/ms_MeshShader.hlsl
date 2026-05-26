@@ -132,7 +132,7 @@ void main(
 
 		VertexOut outVert;
 		outVert.position = mul(bConstants.WorldViewProj, float4(v.position, 1.0f));
-		outVert.normal = mul(bConstants.WorldViewProj, float4(v.normal, 0.0f)).xyz;
+		outVert.normal = v.normal;
 		outVert.uv = v.uv;
 		outVert.meshletIndex = gid;
 
