@@ -74,10 +74,12 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 		// Load Meshes
 		//mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Maxwell.obj");
 		mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/MaxwellHighRes.obj");
+		//mMeshMaxwell = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/MaxwellSuperHighRes.obj");
 		Assets::MeshLoader::UploadMeshResources(mDevice, mDirectCommandQueue, mDirectCommandAllocator, mDirectCommandList, mMeshMaxwell);
 
 		//mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/Whiskers.obj");
 		mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/WhiskersHighRes.obj");
+		//mMeshWhiskers = Assets::MeshLoader::LoadMesh("../../Engine/assets/Meshes/WhiskersSuperHighRes.obj");
 		Assets::MeshLoader::UploadMeshResources(mDevice, mDirectCommandQueue, mDirectCommandAllocator, mDirectCommandList, mMeshWhiskers);
 
 		// Load Shaders
@@ -128,10 +130,9 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 		mGraphicsPipelineState = Assets::ShaderLoader::CreateGraphicsPipelineState(mDevice, mGraphicsRootSignature, Assets::MeshLoader::cDefaultElementDesc, 3, &mVShader, &mPShader);
 	}
 
-
 	// Initialize Camera and Objects
 	{
-		constexpr int NUM_OBJECTS {1024};
+		constexpr int NUM_OBJECTS {128};
 		const int SQRT_NUM_OBJECTS {static_cast<int>(sqrt(NUM_OBJECTS))};
 		
 		mCamera.SetCamera(
@@ -185,16 +186,18 @@ void DX12Renderer::Draw()
 	// Update
 	Update();
 
-
 	// ImGui
 #if defined(USE_IMGUI)
 	HexEngine::Graphics::UI::ImGuiTool::Start();
 
 	ImGui::Begin("Renderer");
 	{
-		ImGui::Checkbox("Use Mesh Shader", &mUseMeshShader);
+		if (ImGui::Checkbox("Use Mesh Shader", &mUseMeshShader))
+		{
+			std::print("{} pipeline\n", mUseMeshShader ? "Mesh" : "Vertex");
+		}
 
-		ImGui::Text("Camera Parameters:");
+		if (ImGui::TreeNode("Camera Parameters"))
 		{
 			World::CameraParams camParams = mCamera.GetCameraParams();
 
@@ -220,6 +223,18 @@ void DX12Renderer::Draw()
 					camParams.farZ
 				);
 			}
+
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode("Objects"))
+		{
+			ImGui::Text("Object Count: %d", static_cast<int>(mObjects.size()));
+
+			ImGui::Checkbox("Spin", &mDoSpin);
+			ImGui::DragFloat("Spin Multiplier", &mSpinMult, 0.001f);
+
+			ImGui::TreePop();
 		}
 	}
 	ImGui::End();
@@ -252,23 +267,29 @@ void DX12Renderer::Update()
 
 	// TODO: Camera controls
 
+	float spinRate = mSpinMult * 0.000000002f * dTime;
+	DirectX::XMVECTOR spinQuat = DirectX::XMQuaternionRotationAxis({ 0.0f, 1.0f, 0.0f, 0.0f }, spinRate);
+
 	for (auto &object : mObjects)
 	{
 		DirectX::XMMATRIX objMat = DirectX::XMLoadFloat4x4A(&object.GetWorldMatrix());
 		
-		// Rotate object around Y-axis
-		
-		DirectX::XMVECTOR vecScale, vecRotation, vecTranslation;
-		DirectX::XMMatrixDecompose(&vecScale, &vecRotation, &vecTranslation, objMat);
-		vecRotation = DirectX::XMQuaternionMultiply(vecRotation, DirectX::XMQuaternionRotationAxis({0.0f, 1.0f, 0.0f, 0.0f}, 0.000000002f * dTime));
-		objMat = DirectX::XMMatrixAffineTransformation(vecScale, {0.0f, 0.0f, 0.0f, 0.0f}, vecRotation, vecTranslation);
-		//objMat *= DirectX::XMMatrixRotationY(0.000000002f * dTime);
+		if (mDoSpin)
+		{
+			DirectX::XMVECTOR vecScale, vecRotation, vecTranslation;
+			DirectX::XMMatrixDecompose(&vecScale, &vecRotation, &vecTranslation, objMat);
 
-		DirectX::XMFLOAT4X4A newObjMat{};
-		DirectX::XMStoreFloat4x4A(&newObjMat, objMat);
+			// Rotate object around Y-axis
+			vecRotation = DirectX::XMQuaternionMultiply(vecRotation, spinQuat);
 
-		object.SetWorldMatrix(newObjMat);	
-		
+			objMat = DirectX::XMMatrixAffineTransformation(vecScale, { 0.0f, 0.0f, 0.0f, 0.0f }, vecRotation, vecTranslation);
+
+			DirectX::XMFLOAT4X4A newObjMat{};
+			DirectX::XMStoreFloat4x4A(&newObjMat, objMat);
+
+			object.SetWorldMatrix(newObjMat);
+		}
+
 		// Submit changes to GPU
 		object.Update(mDirectCommandList, mCamera);
 	}

@@ -79,6 +79,9 @@ namespace HexEngine::Graphics::DirectX12
 
 		bool mUseMeshShader { true };
 
+		bool mDoSpin { false };
+		float mSpinMult { 1.0f };
+
         //winrt::com_ptr<ID3D12Device2> m_device;
         //MW::ComPtr<ID3D12CommandQueue> m_commandQueue;
         // MW::ComPtr<ID3D12DescriptorHeap> m_backBufferDescriptorHeap;

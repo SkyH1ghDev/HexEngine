@@ -21,7 +21,9 @@ void Clock::Update()
     if (elapsedSeconds > 1.0)
     {
         double fps = static_cast<double>(frameCount) / elapsedSeconds;
-        std::cout << std::format("FPS = {:.2f}\n", fps) << std::flush;
+		double msPerFrame = 1000.0 / fps;
+
+        std::cout << std::format("FPS: {:.2f}, \tms: {:.4f}\n", fps, msPerFrame) << std::flush;
 
         frameCount = 0;
         elapsedSeconds = 0.0;

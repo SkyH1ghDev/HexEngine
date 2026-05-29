@@ -10,7 +10,7 @@
 #include <utils/WaveFrontReader.h>
 
 #define MAX_MESHLET_VERTS 64
-#define MAX_MESHLET_PRIMS 126
+#define MAX_MESHLET_PRIMS 40
 
 using namespace winrt;
 using namespace DirectX;
