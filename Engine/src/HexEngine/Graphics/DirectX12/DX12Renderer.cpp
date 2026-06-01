@@ -132,7 +132,7 @@ DX12Renderer::DX12Renderer(const HexEngine::SDL::SDLWindow& pWindow)
 
 	// Initialize Camera and Objects
 	{
-		constexpr int NUM_OBJECTS {128};
+		constexpr int NUM_OBJECTS {64};
 		const int SQRT_NUM_OBJECTS {static_cast<int>(sqrt(NUM_OBJECTS))};
 		
 		mCamera.SetCamera(

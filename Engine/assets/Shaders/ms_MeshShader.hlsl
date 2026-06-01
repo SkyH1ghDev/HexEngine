@@ -98,7 +98,7 @@ uint LoadUniqueVertexIndex(uint meshletVertexIndex)
 // =================================== Main ===================================
 
 [RootSignature("CBV(b0), RootConstants(b1, num32bitconstants=2), SRV(t0), SRV(t1), SRV(t2), SRV(t3)")]
-[NumThreads(128, 1, 1)]
+[NumThreads(MAX_MESHLET_VERTS, 1, 1)]
 [OutputTopology("triangle")]
 void main(
     uint gtid : SV_GroupThreadID,
@@ -111,15 +111,6 @@ void main(
 	Meshlet meshlet = tMeshlets[bMeshInfo.meshletOffset + gid];
 
 	SetMeshOutputCounts(meshlet.vertCount, meshlet.triCount);
-	
-	if (gtid < meshlet.triCount)
-	{
-		uint packedTri = tPrimitiveIndices[meshlet.triOffset + gtid];
-		
-		uint3 tri = UnpackTriangle(packedTri);
-
-		tris[gtid] = tri;
-	}
 	
 	if (gtid < meshlet.vertCount)
 	{
@@ -137,6 +128,15 @@ void main(
 		outVert.meshletIndex = gid;
 
 		verts[gtid] = outVert;
+	}
+	
+	if (gtid < meshlet.triCount)
+	{
+		uint packedTri = tPrimitiveIndices[meshlet.triOffset + gtid];
+		
+		uint3 tri = UnpackTriangle(packedTri);
+
+		tris[gtid] = tri;
 	}
 }
 
