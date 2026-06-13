@@ -4,12 +4,6 @@
 [submodule "External/SDL3"]
 	path = External/SDL3
 	url = https://github.com/libsdl-org/SDL.git
-[submodule "External/DirectXToolKit"]
-	path = External/DirectXToolKit
-	url = https://github.com/microsoft/DirectXTK12.git
-[submodule "External/DirectXHeaders"]
-	path = External/DirectXHeaders
-	url = https://github.com/microsoft/DirectX-Headers.git
 [submodule "External/ImGui"]
 	path = External/ImGui
 	url = https://github.com/ocornut/imgui.git

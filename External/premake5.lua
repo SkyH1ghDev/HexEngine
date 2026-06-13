@@ -1,4 +1,4 @@
-project "GoogleTest"
+project "googletest"
     kind "StaticLib"
     location(projectsPath)
 
@@ -96,7 +96,7 @@ project "DirectXToolKit"
         buildcommands
         {
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_CXX_COMPILER=wineg++ -DDIRECTX_DXC_TOOL='/usr/bin/wine cmd dxc'",
+            "cmake -S " .. moduleDir .. " -DDIRECTX_DXC_TOOL='/usr/local/bin/dxc' -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} --debug-output",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -132,7 +132,7 @@ project "DirectXHeaders"
         buildcommands
         {
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_CXX_COMPILER=/bin/wineg++ -DDXHEADERS_BUILD_TEST=FALSE -DDXHEADERS_BUILD_GOOGLE_TEST=FALSE",
+            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DDXHEADERS_BUILD_TEST=FALSE -DDXHEADERS_BUILD_GOOGLE_TEST=FALSE",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
