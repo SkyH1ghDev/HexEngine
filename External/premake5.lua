@@ -1,4 +1,4 @@
-project "googletest"
+project "GoogleTest"
     kind "StaticLib"
     location(projectsPath)
 
@@ -61,78 +61,6 @@ project "SDL3"
         buildcommands{
             "{MKDIR} %{prj.objdir}",
             "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DSDL_STATIC=ON -DSDL_SHARED=OFF -DSDL_LIBC=ON",
-            "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
-        }
-
-project "DirectXToolKit"
-    kind "StaticLib"
-    location(projectsPath)
-
-    moduleDir = "\"" .. path.getdirectory(_SCRIPT) .. "\"" .. "/%{prj.name}"
-
-    targetdir(targetBuildPath .. "/External")
-    objdir(objBuildPath .. "/%{prj.name}")
-
-    filter "system:windows"
-        kind "Utility"
-        filter "configurations:release"
-            prebuildcommands
-            {
-                "{MKDIR} %{prj.objdir}",
-                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded'",
-                "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
-            }
-
-        filter "configurations:debug"
-            prebuildcommands
-            {
-                "{MKDIR} %{prj.objdir}",
-                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
-                "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
-            }
-
-    filter "system:linux"
-        kind "Makefile"
-        buildcommands
-        {
-            "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDir .. " -DDIRECTX_DXC_TOOL='/usr/local/bin/dxc' -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} --debug-output",
-            "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
-        }
-
-project "DirectXHeaders"
-    kind "StaticLib"
-    location(projectsPath)
-
-    moduleDir = "\"" .. path.getdirectory(_SCRIPT) .. "\"" .. "/%{prj.name}"
-
-    targetdir(targetBuildPath .. "/External")
-    objdir(objBuildPath .. "/%{prj.name}")
-
-    filter "system:windows"
-        kind "Utility"
-        filter "configurations:release"
-            prebuildcommands
-            {
-                "{MKDIR} %{prj.objdir}",
-                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DDXHEADERS_BUILD_TEST=FALSE -DDXHEADERS_BUILD_GOOGLE_TEST=FALSE -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded'",
-                "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
-            }
-        
-        filter "configurations:debug"
-            prebuildcommands
-            {
-                "{MKDIR} %{prj.objdir}",
-                "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DDXHEADERS_BUILD_TEST=FALSE -DDXHEADERS_BUILD_GOOGLE_TEST=FALSE -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
-                "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
-            }
-
-    filter "system:linux"
-    kind "Makefile"
-        buildcommands
-        {
-            "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDir .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DDXHEADERS_BUILD_TEST=FALSE -DDXHEADERS_BUILD_GOOGLE_TEST=FALSE",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 

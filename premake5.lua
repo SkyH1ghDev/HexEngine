@@ -1,6 +1,5 @@
 require "clean"
 require "vscode"
-require "winegcc"
 
 workspace "HexEngine"
 
