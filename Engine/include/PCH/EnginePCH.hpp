@@ -20,7 +20,7 @@
 
 // Dear ImGui
 #include <ImGui/imgui.h>
-#include <ImGui/imgui_impl_dx12.h>
+#include <ImGui/imgui_impl_vulkan.h>
 #include <ImGui/imgui_impl_sdl3.h>
 
 // ---------------------- //

@@ -61,7 +61,7 @@ project "SDL3"
         kind "Makefile"
         buildcommands{
             "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DSDL_STATIC=ON -DSDL_SHARED=OFF -DSDL_LIBC=ON",
+            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DSDL_STATIC=ON -DSDL_SHARED=OFF",
             "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
         }
 
@@ -113,7 +113,7 @@ project "ImGui"
 
     files {
         "ImGui/imgui*.cpp",
-        "ImGui/backends/imgui_impl_dx12.cpp",
+        "ImGui/backends/imgui_impl_vulkan.cpp",
         "ImGui/backends/imgui_impl_sdl3.cpp"
     }
 
@@ -128,22 +128,15 @@ project "ImGui"
     filter "system:windows"
         prebuildcommands{
             "{MKDIR} " .. AddQuotation(imGuiPath),
-            "{COPY} " .. AddQuotation(rootPath).. "/External/ImGui/*.h " .. AddQuotation(imGuiPath),
-            "{COPY} " .. AddQuotation(rootPath) .. "/External/ImGui/backends/imgui_impl_dx12.h " .. AddQuotation(imGuiPath),
-            "{COPY} " .. AddQuotation(rootPath) .. "/External/ImGui/backends/imgui_impl_SDL3.h " .. AddQuotation(imGuiPath)
+            "{COPY} " .. AddQuotation(rootPath .. "/External/ImGui") .. "/*.h" .. " " .. AddQuotation(imGuiPath),
+            "{COPY} " .. AddQuotation(rootPath .. "/External/ImGui/backends/imgui_impl_vulkan.h") .. " " .. AddQuotation(imGuiPath),
+            "{COPY} " .. AddQuotation(rootPath .. "/External/ImGui/backends/imgui_impl_sdl3.h") .. " " .. AddQuotation(imGuiPath)
         }
 
     filter "system:linux"
-
-        includedirs{
-            "ImGui/",
-            "ImGui/backends/",
-            targetBuildPath .. "/External/include/",
-        }
-
-        buildcommands{
+        prebuildcommands{
             "{MKDIR} " .. AddQuotation(imGuiPath),
-            "{COPY} " .. AddQuotation(rootPath) .. "/External/ImGui/*.h " .. AddQuotation(imGuiPath),
-            "{COPY} " .. AddQuotation(rootPath) .. "/External/ImGui/backends/imgui_impl_dx12.h " .. AddQuotation(imGuiPath),
-            "{COPY} " .. AddQuotation(rootPath) .. "/External/ImGui/backends/imgui_impl_SDL3.h " .. AddQuotation(imGuiPath)
+            "{COPY} " .. AddQuotation(rootPath .. "/External/ImGui") .. "/*.h" .. " " .. AddQuotation(imGuiPath),
+            "{COPY} " .. AddQuotation(rootPath .. "/External/ImGui/backends/imgui_impl_vulkan.h") .. " " .. AddQuotation(imGuiPath),
+            "{COPY} " .. AddQuotation(rootPath .. "/External/ImGui/backends/imgui_impl_sdl3.h") .. " " .. AddQuotation(imGuiPath)
         }
