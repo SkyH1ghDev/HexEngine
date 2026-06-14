@@ -12,12 +12,21 @@ project "Game"
 
     dependson{"Engine"}
 
-    links{"SDL3-static", "imagehlp", "setupapi", "user32", "version", "uuid", "winmm", "imm32", 
-          "Engine",
-          "DirectXTK12", 
-          "DirectX-Headers",
-          "DirectX-Guids",
-          "d3d12",
-          "DXGI",
-          "ImGui"
+    filter "system:windows"
+        links {
+            "image",
+            "imagehlp",
+            "setupapi",
+            "user32",
+            "version",
+            "uuid",
+            "winmm",
+            "imm32"
+        }
+
+    links {
+        "vulkan",
+        "SDL3-static",
+        "Engine",
+        "ImGui"
     }

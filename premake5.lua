@@ -1,5 +1,5 @@
-require "clean"
-require "vscode"
+require "Premake/clean"
+require "Premake/helper"
 
 workspace "HexEngine"
 
