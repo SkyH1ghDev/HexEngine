@@ -10,7 +10,14 @@ project "Game"
 
     libdirs{targetBuildPath .. "/External/lib/"}
 
-    dependson{"Engine"}
+    dependson {"Engine"}
+
+    links {
+        AddQuotation("SDL3"),
+        "Engine",
+        "vulkan",
+        "ImGui"
+    }
 
     filter "system:windows"
         links {
@@ -24,9 +31,4 @@ project "Game"
             "imm32"
         }
 
-    links {
-        "vulkan",
-        "SDL3-static",
-        "Engine",
-        "ImGui"
-    }
+

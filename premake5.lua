@@ -21,6 +21,10 @@ workspace "HexEngine"
         runtime "Release"
         defines { "NDEBUG" }
         optimize "On"
+    -- 'Temporary' solution to valgrind not being able to read AVX512 instructions
+    filter { "system:linux" }
+        buildoptions{"-mavx2"}
+
 
     rootPath = path.getdirectory(_SCRIPT)
     targetBuildPath = path.getdirectory(_SCRIPT) .. "/Build/target"

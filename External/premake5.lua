@@ -66,40 +66,6 @@ project "SDL3"
         }
 
 
-project "VulkanHeaders"
-    kind "StaticLib"
-    location(projectsPath)
-
-    moduleDirectory = AddQuotation(path.getdirectory(_SCRIPT) .. "/%{prj.name}")
-
-    targetdir(targetBuildPath .. "/External")
-    objdir(objBuildPath .. "/%{prj.name}")
-
-    filter "system:windows"
-        kind "Utility"
-
-        filter "configurations:release"
-            prebuildcommands{
-                "{MKDIR} %{prj.objdir}",
-                "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded'",
-                "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
-            }
-
-        filter "configurations:debug"
-            prebuildcommands{
-                "{MKDIR} %{prj.objdir}",
-                "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir} -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreadedDebug'",
-                "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
-            }
-
-    filter "system:linux"
-        kind "Makefile"
-        buildcommands{
-            "{MKDIR} %{prj.objdir}",
-            "cmake -S " .. moduleDirectory .. " -B %{prj.objdir} -DCMAKE_INSTALL_PREFIX=%{prj.targetdir}",
-            "cmake --build %{prj.objdir} --config %{cfg.buildcfg} --target install",
-        }
-
 project "ImGui"
     kind "StaticLib"
     location(projectsPath)

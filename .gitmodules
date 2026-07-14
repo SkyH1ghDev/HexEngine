@@ -8,6 +8,3 @@
 	path = External/ImGui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
-[submodule "External/VulkanHeaders"]
-	path = External/VulkanHeaders
-	url = git@github.com:KhronosGroup/Vulkan-Headers.git

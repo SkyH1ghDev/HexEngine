@@ -16,5 +16,5 @@ public:
     static void PostQuitEvent_Callback(bool keyState);
 
 private:
-    static bool m_shouldRun;
+    inline static bool m_shouldRun {true};
 };

@@ -6,7 +6,7 @@
 
 bool EngineLoop::m_isRunning = true;
 
-void EngineLoop::Run(Renderer& renderer)
+/*void EngineLoop::Run(Renderer& renderer)
 {
     
     while (m_isRunning)
@@ -20,7 +20,7 @@ void EngineLoop::Run(Renderer& renderer)
     }
 
     renderer.Cleanup();
-}
+}*/
 
 void EngineLoop::Stop()
 {
