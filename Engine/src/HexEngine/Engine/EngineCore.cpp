@@ -5,7 +5,7 @@
 #include <HexEngine/Input/Input.hpp>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_vulkan.h>
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
 #include <print>
 #include <iostream>
 
@@ -16,53 +16,41 @@ void EngineCore::Run()
 
     SDLWindow window(EngineSetup::InitializeWindow());
 
-    VkApplicationInfo appInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pNext = nullptr,
-        .pApplicationName = "Hello Triangle!",
-        .applicationVersion = VK_MAKE_VERSION(0, 0, 1),
-        .pEngineName = "HexEngine",
-        .engineVersion = VK_MAKE_VERSION(0, 0, 1),
-        .apiVersion = VK_API_VERSION_1_4
+    const vk::raii::Context context {};
+    const std::uint32_t vkApiVersion { context.enumerateInstanceVersion() };
+
+    const vk::ApplicationInfo appInfo {
+        "Editor",
+        VK_MAKE_API_VERSION(0, 0, 0, 0),
+        "HexEngine",
+        VK_MAKE_API_VERSION(0, 0, 0, 1),
+        vkApiVersion,
+       {}
     };
 
     std::uint32_t numExtensions = 0;
-    char const * const * vulkanExtensions = SDL_Vulkan_GetInstanceExtensions(&numExtensions);
+    char const * const * sdlVulkanExt = SDL_Vulkan_GetInstanceExtensions(&numExtensions);
 
-    VkInstanceCreateInfo createInfo
-    {
-        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .pApplicationInfo = &appInfo,
-        .enabledLayerCount = 0,
-        .ppEnabledLayerNames = nullptr,
-        .enabledExtensionCount = numExtensions,
-        .ppEnabledExtensionNames = vulkanExtensions
+    const vk::InstanceCreateInfo createInfo {
+        {},
+        &appInfo,
+        {},
+        {},
+        {},
+        sdlVulkanExt,
+        {}
     };
 
-    VkInstance instance {};
-    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+    const vk::raii::Instance instance { context, createInfo };
+
+    const std::vector<vk::PhysicalDeviceGroupProperties> physicalDeviceGroupProperties { instance.enumeratePhysicalDeviceGroups() };
+
+    for (vk::PhysicalDeviceGroupProperties a : physicalDeviceGroupProperties)
     {
-        throw std::runtime_error("Failed to create instance!");
+        std::cout << a.physicalDeviceCount << "\n";
     }
 
-    std::uint32_t extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-
-    std::vector<VkExtensionProperties> extensions(extensionCount);
-
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-
-    std::print("available extensions:\n");
-
-    for (const auto& [extensionName, specVersion] : extensions)
-    {
-        std::cout << "\t" << extensionName << "\n";
-    }
-
-    vkDestroyInstance(instance, nullptr);
+    const vk::raii::PhysicalDevices physicalDevices { instance };
 
     while (true) {} // Loop
     Quit();

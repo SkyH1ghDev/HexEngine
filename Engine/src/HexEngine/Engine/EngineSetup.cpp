@@ -6,7 +6,7 @@ SDLWindow EngineSetup::InitializeWindow()
         "HexEngine",
         800,
         600,
-        0
+        SDL_WINDOW_VULKAN
         ));
 
     return window;
