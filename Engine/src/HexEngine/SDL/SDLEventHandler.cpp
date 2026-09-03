@@ -3,7 +3,6 @@
 #include <HexEngine/Engine/EngineLoop.hpp>
 
 #include <SDL3/SDL_events.h>
-#include <ImGui/imgui_impl_sdl3.h>
 
 void SDLEventHandler::HandleEvents()
 {

@@ -6,8 +6,8 @@
 //                        //
 // ---------------------- //
 
-#include <iostream>
 #include <cstdint>
+#include <print>
 
 // ---------------------- //
 //                        //
@@ -16,12 +16,7 @@
 // ---------------------- //
 
 // Vulkan
-#include <vulkan/vulkan.hpp>
-
-// Dear ImGui
-#include <ImGui/imgui.h>
-#include <ImGui/imgui_impl_vulkan.h>
-#include <ImGui/imgui_impl_sdl3.h>
+#include <vulkan/vulkan_raii.hpp>
 
 // ---------------------- //
 //                        //

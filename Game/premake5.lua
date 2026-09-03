@@ -8,7 +8,7 @@ project "Game"
     files {"src/**.h", "src/**.cpp"}
     includedirs{"../Engine/include", targetBuildPath .. "/External/include"}
 
-    libdirs{targetBuildPath .. "/External/lib/"}
+    libdirs{targetBuildPath .. "/External/lib/", targetBuildPath .. "/External/lib64/"}
 
     dependson {"Engine"}
 

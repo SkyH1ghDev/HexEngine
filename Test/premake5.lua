@@ -8,7 +8,7 @@ project "Test"
     files {"src/**.hpp", "src/**.cpp"}
     includedirs{"../Engine/include", targetBuildPath .. "/External/include"}
 
-    libdirs{targetBuildPath .. "/External/lib"}
+    libdirs{targetBuildPath .. "/External/lib", targetBuildPath .. "/External/lib64"}
 
     -- Although this consoleApp does not link to the "GoogleTest" project per say, it is still dependant on its build to finish
     dependson {"GoogleTest", "Engine", "SDL3"}

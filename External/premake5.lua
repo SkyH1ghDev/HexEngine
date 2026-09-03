@@ -1,4 +1,4 @@
-project "GoogleTest"
+project "googletest"
     kind "StaticLib"
     location(projectsPath)
 
